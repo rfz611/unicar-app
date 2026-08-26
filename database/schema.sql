@@ -1,0 +1,1 @@
+-- Scripts DDL do MySQL
