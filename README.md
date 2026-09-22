@@ -19,7 +19,7 @@ Plataforma mobile de caronas compartilhadas exclusiva para a comunidade da Unive
 
 ### 🗄️ Bloco 1: Banco de Dados & Estrutura Base
 - [x] **1.1** Criar script de criação das tabelas (`database/schema.sql`)
-- [ ] **1.2** Criar dados fictícios de teste (`database/seed.sql`)
+- [x] **1.2** Criar dados fictícios de teste (`database/seed.sql`)
 - [ ] **1.3** Subir o banco de dados MySQL para testes
 
 ---
