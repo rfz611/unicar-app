@@ -25,7 +25,7 @@ Plataforma mobile de caronas compartilhadas exclusiva para a comunidade da Unive
 ---
 
 ### ⚙️ Bloco 2: Back-end API (C# / ASP.NET Core)
-- [ ] **2.1** Configurar conexão com o MySQL via Entity Framework
+- [x] **2.1** Configurar conexão com o MySQL via Entity Framework
 - [ ] **2.2** Módulo de Autenticação (Cadastro com domínio institucional e Login)
 - [ ] **2.3** Módulo de Caronas (Criar rota, listar caronas e buscar por destino/data)
 - [ ] **2.4** Módulo de Reservas (Solicitar vaga e decremento automático de assentos)
