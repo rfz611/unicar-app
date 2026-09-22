@@ -1,0 +1,15 @@
+﻿version: '3.8'
+
+services:
+  unicar-db:
+    image: mysql:8.0
+    container_name: unicar-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: unicar_db
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ./database/seed.sql:/docker-entrypoint-initdb.d/02_seed.sql
