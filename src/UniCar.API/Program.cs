@@ -4,7 +4,19 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi;
+
 var builder = WebApplication.CreateBuilder(args);
+
+// 1. Configuração do CORS (libera o Expo Web e outros clientes locais)
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -31,6 +43,7 @@ builder.Services.AddSwaggerGen(c =>
         [new OpenApiSecuritySchemeReference("Bearer", document)] = []
     });
 });
+
 var key = Encoding.ASCII.GetBytes("chave_secreta_super_segura_unicar_api_2026_jwt_token");
 
 builder.Services.AddAuthentication(x =>
@@ -46,10 +59,11 @@ builder.Services.AddAuthentication(x =>
     {
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(key),
-        ValidateIssuer = false, // Em produção, isto deve ser true e validado
-        ValidateAudience = false // Em produção, isto deve ser true e validado
+        ValidateIssuer = false,
+        ValidateAudience = false
     };
 });
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -61,8 +75,8 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-// Comenta ou remove esta linha se estiveres a rodar apenas em HTTP para sumir o aviso amarelo
-// app.UseHttpsRedirection(); 
+// 2. Middleware do CORS (obrigatório vir ANTES de UseAuthentication e UseAuthorization)
+app.UseCors("AllowAll");
 
 app.UseAuthentication();
 app.UseAuthorization();

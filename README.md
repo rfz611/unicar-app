@@ -29,12 +29,12 @@ Plataforma mobile de caronas compartilhadas exclusiva para a comunidade da Unive
 - [x] **2.2** Módulo de Autenticação (Cadastro com domínio institucional e Login)
 - [x] **2.3** Módulo de Caronas (Criar rota, listar caronas e buscar por destino/data)
 - [x] **2.4** Módulo de Reservas (Solicitar vaga e decremento automático de assentos)
-- [ ] **2.5** Módulo de Avaliação (Registrar nota de 1 a 5 e feedback pós-carona)
+- [x] **2.5** Módulo de Avaliação (Registrar nota de 1 a 5 e feedback pós-carona)
 
 ---
 
 ### 📱 Bloco 3: Front-end Mobile (.NET MAUI)
-- [ ] **3.1** Criar telas de Autenticação (Login e Cadastro)
+- [x] **3.1** Criar telas de Autenticação (Login e Cadastro)
 - [ ] **3.2** Criar tela de Feed (Cards de caronas com botão de solicitar)
 - [ ] **3.3** Criar tela de Publicação (Formulário para o motorista ofertar carona)
 - [ ] **3.4** Criar tela de Perfil / Histórico (Dados do usuário e viagens)
