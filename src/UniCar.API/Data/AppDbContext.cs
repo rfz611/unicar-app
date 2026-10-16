@@ -11,4 +11,5 @@ public class AppDbContext : DbContext
 
     public DbSet<User> Users { get; set; }
     public DbSet<Ride> Rides { get; set; }
+    public DbSet<Rating> Ratings { get; set; }
 }
