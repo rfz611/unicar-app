@@ -22,7 +22,9 @@ public class RidesController : ControllerBase
     [Authorize]
     public async Task<IActionResult> CreateRide([FromBody] CreateRideDto dto)
     {
-        var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "userId" || c.Type == System.Security.Claims.ClaimTypes.NameIdentifier);
+        var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "userId" 
+                                                       || c.Type == System.Security.Claims.ClaimTypes.NameIdentifier
+                                                       || c.Type == "sub");
         
         if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int driverId))
             return Unauthorized(new { message = "Token inválido ou utilizador não identificado." });
@@ -70,6 +72,39 @@ public class RidesController : ControllerBase
             .ToListAsync();
 
         return Ok(rides);
+    }
+
+    // POST: api/rides/1/join
+    [HttpPost("{id}/join")]
+    [Authorize]
+    public async Task<IActionResult> JoinRide(int id)
+    {
+        var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "userId" 
+                                                       || c.Type == System.Security.Claims.ClaimTypes.NameIdentifier
+                                                       || c.Type == "sub");
+
+        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int passengerId))
+            return Unauthorized(new { message = "Token inválido ou utilizador não identificado." });
+
+        var ride = await _context.Rides.FindAsync(id);
+        if (ride == null)
+            return NotFound(new { message = "Carona não encontrada." });
+
+        if (ride.AvailableSeats <= 0)
+            return BadRequest(new { message = "Não há vagas disponíveis para esta carona." });
+
+        if (ride.DriverId == passengerId)
+            return BadRequest(new { message = "Você é o motorista desta carona." });
+
+        ride.AvailableSeats -= 1;
+        await _context.SaveChangesAsync();
+
+        return Ok(new 
+        { 
+            message = "Reserva realizada com sucesso!", 
+            rideId = ride.Id, 
+            remainingSeats = ride.AvailableSeats 
+        });
     }
 }
 

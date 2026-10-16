@@ -28,7 +28,7 @@ Plataforma mobile de caronas compartilhadas exclusiva para a comunidade da Unive
 - [x] **2.1** Configurar conexão com o MySQL via Entity Framework
 - [x] **2.2** Módulo de Autenticação (Cadastro com domínio institucional e Login)
 - [x] **2.3** Módulo de Caronas (Criar rota, listar caronas e buscar por destino/data)
-- [ ] **2.4** Módulo de Reservas (Solicitar vaga e decremento automático de assentos)
+- [x] **2.4** Módulo de Reservas (Solicitar vaga e decremento automático de assentos)
 - [ ] **2.5** Módulo de Avaliação (Registrar nota de 1 a 5 e feedback pós-carona)
 
 ---
