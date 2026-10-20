@@ -1,0 +1,14 @@
+services:
+  db:
+    image: postgres:16
+    container_name: unicar-db
+    environment:
+      POSTGRES_USER: unicar
+      POSTGRES_PASSWORD: unicar_dev
+      POSTGRES_DB: unicar
+    ports:
+      - "5432:5432"
+    volumes:
+      - unicar-data:/var/lib/postgresql/data
+volumes:
+  unicar-data:
