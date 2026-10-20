@@ -3,3 +3,12 @@ obj/
 .vs/
 .vscode/
 *.user
+.idea/
+.DS_Store
+__pycache__/
+*.tmp
+mono_crash*
+tests/api-check.log
+.env
+.env.*
+secrets.json

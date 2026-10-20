@@ -15,6 +15,16 @@ docker start unicar-app
 
 ---
 
+## 🗃️ PASSO 1.5: ATUALIZAR O BANCO (CNH e recuperação de senha)
+Escolha UM caminho:
+
+dotnet ef migrations add AddCnhAndPasswordReset --project unicar-app/src/UniCar.API
+dotnet ef database update --project unicar-app/src/UniCar.API
+
+ou execute o script database/002_cnh_e_reset_senha.sql no MySQL.
+
+---
+
 ## 🚀 PASSO 2: EXECUTAR A API BACKEND
 No terminal, na pasta do projeto, execute:
 

@@ -1,0 +1,4 @@
+<Project Sdk="Microsoft.NET.Sdk">
+<PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup>
+<ItemGroup><Compile Include="../../src/UniCar.Mobile/Models/RideModels.cs" Link="RideModels.cs"/><Compile Include="../../src/UniCar.Mobile/Services/RideService.cs" Link="RideService.cs"/><Compile Include="../../src/UniCar.Mobile/Models/TravelModels.cs" Link="TravelModels.cs"/><Compile Include="../../src/UniCar.Mobile/Services/MoneyInput.cs" Link="MoneyInput.cs"/><Compile Include="../../src/UniCar.Mobile/Services/RouteSelectionGuard.cs" Link="RouteSelectionGuard.cs"/><Compile Include="../../src/UniCar.Mobile/Services/UIStateGuards.cs" Link="UIStateGuards.cs"/></ItemGroup>
+</Project>

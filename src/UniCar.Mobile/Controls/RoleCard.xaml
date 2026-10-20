@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="UniCar.Mobile.Controls.RoleCard">
+
+    <Border x:Name="Card"
+            BackgroundColor="White"
+            Stroke="#DCE3EF"
+            StrokeThickness="2"
+            StrokeShape="RoundRectangle 12"
+            Padding="16">
+        <Border.GestureRecognizers>
+            <TapGestureRecognizer Tapped="OnTapped" />
+        </Border.GestureRecognizers>
+
+        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14">
+
+            <Border BackgroundColor="#F1F4F9"
+                    WidthRequest="48"
+                    HeightRequest="48"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 24"
+                    VerticalOptions="Center">
+                <Label x:Name="IconLabel"
+                       FontSize="24"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center" />
+            </Border>
+
+            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                <Label x:Name="TitleLabel" FontSize="17" FontAttributes="Bold" TextColor="{StaticResource Brand}" />
+                <Label x:Name="SubtitleLabel" FontSize="14" TextColor="#5B6B85" />
+            </VerticalStackLayout>
+
+            <Border Grid.Column="2"
+                    x:Name="Radio"
+                    WidthRequest="24"
+                    HeightRequest="24"
+                    BackgroundColor="White"
+                    Stroke="#BDBDBD"
+                    StrokeThickness="2"
+                    StrokeShape="RoundRectangle 12"
+                    VerticalOptions="Center">
+                <Border x:Name="Dot"
+                        WidthRequest="12"
+                        HeightRequest="12"
+                        BackgroundColor="{StaticResource Brand}"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 6"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center"
+                        IsVisible="False" />
+            </Border>
+        </Grid>
+    </Border>
+</ContentView>

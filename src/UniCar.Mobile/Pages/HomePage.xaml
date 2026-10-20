@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:UniCar.Mobile.Controls"
+             xmlns:models="clr-namespace:UniCar.Mobile.Models"
+             x:Class="UniCar.Mobile.Pages.HomePage"
+             BackgroundColor="White" SafeAreaEdges="Container" Shell.NavBarIsVisible="False">
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Padding="24,16,24,12" RowSpacing="16">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+            <VerticalStackLayout Spacing="4">
+                <Label Text="UNICAR" FontSize="12" CharacterSpacing="2" FontAttributes="Bold" TextColor="{StaticResource Brand}" />
+                <Label x:Name="GreetingLabel" FontSize="26" FontAttributes="Bold" TextColor="{StaticResource Brand}" />
+                <Label x:Name="RoleLabel" FontSize="13" TextColor="{StaticResource Grey700}" />
+            </VerticalStackLayout>
+            <Button Grid.Column="1" Text="Sair" Style="{StaticResource TextButton}" VerticalOptions="Start" Clicked="OnLogoutClicked" />
+        </Grid>
+        <VerticalStackLayout Grid.Row="1" Spacing="12">
+            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                <Button x:Name="CarTab" Text="Carro" CommandParameter="CAR" Style="{StaticResource SelectedOptionButton}" Clicked="OnTabClicked" />
+                <Button x:Name="MotoTab" Grid.Column="1" Text="Moto" CommandParameter="MOTO" Style="{StaticResource OptionButton}" Clicked="OnTabClicked" />
+                <Button x:Name="ReservationsTab" Grid.Column="2" Text="Reservas" CommandParameter="RESERVATIONS" Style="{StaticResource OptionButton}" Clicked="OnTabClicked" />
+            </Grid>
+            <Button x:Name="ScheduleButton" Text="Agendar nova viagem" Style="{StaticResource PrimaryButton}" Clicked="OnScheduleClicked" IsVisible="False" />
+            <VerticalStackLayout x:Name="SearchPanel" Spacing="12">
+            <Label x:Name="SearchTitle" Text="Para onde você vai?" FontSize="18" FontAttributes="Bold" TextColor="{StaticResource Brand}" />
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                    <controls:AddressSearchField x:Name="DestinationEntry" Title="Destino" Placeholder="Destino ou campus" SelectedPointChanged="OnDestinationSelected" />
+                    <Button x:Name="SearchButton" Grid.Column="1" Text="Buscar" Style="{StaticResource TextButton}" Clicked="OnSearchClicked" VerticalOptions="End" HeightRequest="56" CornerRadius="8" BackgroundColor="#E8EDF5">
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal">
+                                    <VisualState.Setters>
+                                        <Setter Property="BackgroundColor" Value="#E8EDF5" />
+                                        <Setter Property="TextColor" Value="#052355" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="PointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Property="BackgroundColor" Value="#052355" />
+                                        <Setter Property="TextColor" Value="White" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Pressed">
+                                    <VisualState.Setters>
+                                        <Setter Property="BackgroundColor" Value="#031735" />
+                                        <Setter Property="TextColor" Value="White" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Disabled">
+                                    <VisualState.Setters>
+                                        <Setter Property="BackgroundColor" Value="#EEF1F6" />
+                                        <Setter Property="TextColor" Value="#7C899D" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                    </Button>
+            </Grid>
+            <Grid x:Name="ScheduleFields" IsVisible="False" ColumnDefinitions="*,*" ColumnSpacing="16">
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="Data da viagem" FontSize="13" TextColor="{StaticResource Grey700}" />
+                    <DatePicker x:Name="ScheduleDate" Format="dd/MM/yyyy" TextColor="{StaticResource Brand}" />
+                </VerticalStackLayout>
+                <VerticalStackLayout Grid.Column="1" Spacing="4">
+                    <Label Text="Veículo" FontSize="13" TextColor="{StaticResource Grey700}" />
+                    <Picker x:Name="ScheduleType" SelectedIndex="0" TextColor="{StaticResource Brand}">
+                        <Picker.Items><x:String>Carro</x:String><x:String>Moto</x:String></Picker.Items>
+                    </Picker>
+                </VerticalStackLayout>
+            </Grid>
+            </VerticalStackLayout>
+            <Button x:Name="OfferButton" Text="Oferecer uma carona" Style="{StaticResource SecondaryButton}" Clicked="OnOfferClicked" IsVisible="False" />
+        </VerticalStackLayout>
+        <Grid Grid.Row="2" RowDefinitions="Auto,*" RowSpacing="12">
+            <Grid ColumnDefinitions="*,Auto">
+                <Label x:Name="ListTitle" Text="Caronas de carro" FontSize="18" FontAttributes="Bold" TextColor="{StaticResource Brand}" VerticalOptions="Center" />
+                <ActivityIndicator x:Name="LoadingIndicator" Grid.Column="1" Color="{StaticResource Brand}" WidthRequest="24" HeightRequest="24" />
+            </Grid>
+            <CollectionView x:Name="RidesList" Grid.Row="1" SelectionMode="None">
+                <CollectionView.ItemsLayout><LinearItemsLayout Orientation="Vertical" ItemSpacing="12" /></CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:Ride">
+                        <Border Stroke="{StaticResource Grey200}" StrokeShape="RoundRectangle 8" Padding="16" BackgroundColor="White">
+                            <VerticalStackLayout Spacing="12">
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                    <Label Text="{Binding DriverName}" FontSize="16" FontAttributes="Bold" TextColor="{StaticResource Brand}" />
+                                    <Label Grid.Column="1" Text="{Binding DepartureLabel}" FontSize="13" TextColor="{StaticResource Grey700}" VerticalOptions="Center" />
+                                </Grid>
+                                <BoxView Color="{StaticResource Grey200}" HeightRequest="1" />
+                                <Grid ColumnDefinitions="60,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="8">
+                                    <Label Text="SAÍDA" FontSize="10" CharacterSpacing="1" TextColor="{StaticResource Grey700}" VerticalOptions="Center" />
+                                    <Label Grid.Column="1" Text="{Binding Origin}" FontSize="15" TextColor="{StaticResource Brand}" />
+                                    <Label Grid.Row="1" Text="DESTINO" FontSize="10" CharacterSpacing="1" TextColor="{StaticResource Grey700}" VerticalOptions="Center" />
+                                    <Label Grid.Row="1" Grid.Column="1" Text="{Binding Destination}" FontSize="15" FontAttributes="Bold" TextColor="{StaticResource Brand}" />
+                                </Grid>
+                                <Label Text="{Binding VehicleLabel}" FontSize="13" FontAttributes="Bold" TextColor="{StaticResource Brand}" />
+                                <Label Text="{Binding ReservationLabel}" IsVisible="{Binding IsReserved}" FontSize="14" TextColor="{StaticResource Success}" />
+                                <Label IsVisible="{Binding CanReserve}" Text="{Binding SeatsLabel}" FontSize="13" TextColor="{StaticResource Grey700}" />
+                                <Label Text="{Binding PriceLabel}" TextColor="{StaticResource Brand}" FontSize="14" />
+                                <Button IsVisible="{Binding CanReserve}" Text="{Binding ActionLabel}" Style="{StaticResource PrimaryButton}" Clicked="OnJoinClicked" CommandParameter="{Binding .}" />
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+            <VerticalStackLayout x:Name="StatePanel" Grid.Row="1" VerticalOptions="Center" Spacing="10" Padding="12,24" IsVisible="False">
+                <Label x:Name="StateTitle" FontSize="18" FontAttributes="Bold" HorizontalTextAlignment="Center" TextColor="{StaticResource Brand}" />
+                <Label x:Name="StateMessage" FontSize="14" HorizontalTextAlignment="Center" TextColor="{StaticResource Grey700}" />
+                <Button x:Name="RetryButton" Text="Tentar novamente" Style="{StaticResource SecondaryButton}" Clicked="OnSearchClicked" />
+            </VerticalStackLayout>
+        </Grid>
+        <Label Grid.Row="3" Text="Caronas da comunidade Positivo" FontSize="12" HorizontalTextAlignment="Center" TextColor="{StaticResource Grey700}" />
+    </Grid>
+</ContentPage>

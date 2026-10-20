@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:pages="clr-namespace:UniCar.Mobile.Pages"
+       x:Class="UniCar.Mobile.AppShell"
+       Shell.FlyoutBehavior="Disabled"
+       Shell.NavBarIsVisible="False"
+       Shell.TabBarIsVisible="False"
+       BackgroundColor="{StaticResource Brand}">
+
+    <ShellContent x:Name="WelcomeItem"
+                  Route="welcome"
+                  ContentTemplate="{DataTemplate pages:WelcomePage}" />
+
+    <TabBar x:Name="HomeTabs" Route="home" Shell.TabBarIsVisible="True" Shell.TabBarBackgroundColor="White" Shell.TabBarForegroundColor="{StaticResource Brand}" Shell.TabBarUnselectedColor="{StaticResource Grey700}">
+        <ShellContent x:Name="HomeItem" Title="Inicial" Route="initial" ContentTemplate="{DataTemplate pages:HomePage}" />
+        <ShellContent Title="Atividades" Route="activities" ContentTemplate="{DataTemplate pages:ActivitiesPage}" />
+    </TabBar>
+</Shell>

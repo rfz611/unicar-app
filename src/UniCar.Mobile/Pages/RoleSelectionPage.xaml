@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:UniCar.Mobile.Controls"
+             x:Class="UniCar.Mobile.Pages.RoleSelectionPage"
+             BackgroundColor="White"
+             SafeAreaEdges="Container"
+             Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="*,Auto">
+
+        <ScrollView Grid.Row="0">
+            <VerticalStackLayout Padding="24,16,24,16" Spacing="16">
+
+                <controls:BackButton />
+
+                <VerticalStackLayout Spacing="8" Margin="0,12,0,12">
+                    <Label Text="Como você vai usar o UniCar?" Style="{StaticResource TitleLabel}" />
+                    <Label Text="Você pode mudar isso depois."
+                           Style="{StaticResource SubtitleLabel}" />
+                </VerticalStackLayout>
+
+                <controls:RoleCard x:Name="PassengerCard"
+                                   Value="PASSENGER"
+                                   Icon="🙋"
+                                   Title="Passageiro"
+                                   Subtitle="Preciso de carona até a faculdade"
+                                   Tapped="OnRoleTapped" />
+
+                <controls:RoleCard x:Name="DriverCard"
+                                   Value="DRIVER"
+                                   Icon="🚗"
+                                   Title="Motorista"
+                                   Subtitle="Tenho carro e quero oferecer caronas"
+                                   Tapped="OnRoleTapped" />
+
+                <controls:RoleCard x:Name="BothCard"
+                                   Value="BOTH"
+                                   Icon="🔁"
+                                   Title="Os dois"
+                                   Subtitle="Peço e ofereço caronas, dependendo do dia"
+                                   Tapped="OnRoleTapped" />
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <VerticalStackLayout Grid.Row="1" Padding="24,8,24,24">
+            <Button x:Name="ContinueButton"
+                    Text="Continuar"
+                    IsEnabled="False"
+                    Style="{StaticResource PrimaryButton}"
+                    Clicked="OnContinueClicked" />
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

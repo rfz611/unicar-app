@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:UniCar.Mobile.Controls"
+             x:Class="UniCar.Mobile.Pages.LoginPage"
+             BackgroundColor="White"
+             SafeAreaEdges="Container"
+             Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="*,Auto">
+
+        <ScrollView Grid.Row="0">
+            <VerticalStackLayout Padding="24,16,24,16" Spacing="20">
+
+                <controls:BackButton />
+
+                <Border x:Name="NoticeBanner" Style="{StaticResource SuccessBanner}">
+                    <Label x:Name="NoticeLabel" TextColor="{StaticResource Success}" FontSize="14" />
+                </Border>
+
+                <VerticalStackLayout Spacing="8" Margin="0,12,0,8">
+                    <Label Text="Entrar" Style="{StaticResource TitleLabel}" />
+                    <Label Text="Use seu e-mail institucional da Positivo."
+                           Style="{StaticResource SubtitleLabel}" />
+                </VerticalStackLayout>
+
+                <controls:FormField x:Name="EmailField"
+                                    Title="E-mail institucional"
+                                    Placeholder="nome@positivo.edu.br"
+                                    InputKeyboard="Email" />
+
+                <controls:FormField x:Name="PasswordField"
+                                    Title="Senha"
+                                    Placeholder="Digite sua senha"
+                                    IsPassword="True" />
+
+                <Button Text="Esqueci minha senha"
+                        Style="{StaticResource TextButton}"
+                        HorizontalOptions="Start" Margin="-10,-12,0,0"
+                        Clicked="OnForgotPasswordTapped" />
+
+                <Border x:Name="ErrorBanner" Style="{StaticResource ErrorBanner}">
+                    <Label x:Name="ErrorLabel" TextColor="{StaticResource Danger}" FontSize="14" />
+                </Border>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <VerticalStackLayout Grid.Row="1" Padding="24,8,24,24" Spacing="16">
+            <Button x:Name="LoginButton"
+                    Text="Entrar"
+                    Style="{StaticResource PrimaryButton}"
+                    Clicked="OnLoginClicked" />
+
+            <Grid ColumnDefinitions="*,Auto,*" ColumnSpacing="12" Margin="0,2">
+                <BoxView HeightRequest="1" Color="{StaticResource Grey200}" VerticalOptions="Center" />
+                <Label Grid.Column="1" Text="Primeira vez no UniCar?" FontSize="13"
+                       TextColor="{StaticResource Grey700}" VerticalOptions="Center" />
+                <BoxView Grid.Column="2" HeightRequest="1" Color="{StaticResource Grey200}" VerticalOptions="Center" />
+            </Grid>
+            <Button Text="Criar conta" Style="{StaticResource SecondaryButton}"
+                    Clicked="OnCreateAccountTapped" />
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:models="clr-namespace:UniCar.Mobile.Models" x:Class="UniCar.Mobile.Pages.NegotiationPage" BackgroundColor="White" SafeAreaEdges="Container">
+ <ScrollView><VerticalStackLayout Padding="24,16,24,24" Spacing="16">
+  <Grid ColumnDefinitions="*,Auto"><Button Text="Voltar" Style="{StaticResource TextButton}" HorizontalOptions="Start" Clicked="OnClose"/><Button Grid.Column="1" Text="Atualizar" Style="{StaticResource TextButton}" Clicked="OnRefresh"/></Grid>
+  <Label Text="Combinar contribuição" Style="{StaticResource TitleLabel}"/>
+  <Label x:Name="SummaryLabel" TextColor="{StaticResource Brand}" FontSize="16"/>
+  <Label x:Name="StatusLabel" TextColor="{StaticResource Grey700}" FontSize="15"/>
+  <ActivityIndicator x:Name="Loading" Color="{StaticResource Brand}"/>
+  <VerticalStackLayout x:Name="History" Spacing="10" BindableLayout.ItemsSource="{Binding}"><BindableLayout.ItemTemplate><DataTemplate x:DataType="models:ProposalDto"><Border Padding="14" BackgroundColor="{StaticResource Grey100}" StrokeThickness="0" StrokeShape="RoundRectangle 6"><Label Text="{Binding Description}" TextColor="{StaticResource Brand}" FontSize="14"/></Border></DataTemplate></BindableLayout.ItemTemplate></VerticalStackLayout>
+  <Label x:Name="ErrorLabel" TextColor="{StaticResource Danger}" FontSize="14" IsVisible="False"/>
+  <VerticalStackLayout x:Name="Actions" Spacing="12">
+   <VerticalStackLayout x:Name="AmountPanel" Spacing="6"><Label Text="Contribuição por sua vaga (R$)" TextColor="{StaticResource Brand}" FontAttributes="Bold"/><Entry x:Name="AmountEntry" Keyboard="Numeric" Placeholder="Ex.: 12,50" TextColor="{StaticResource Brand}"/><Button x:Name="SubmitButton" Text="Enviar proposta" Style="{StaticResource PrimaryButton}" Clicked="OnSubmit"/></VerticalStackLayout>
+   <Button x:Name="AcceptButton" Text="Aceitar valor e confirmar vaga" Style="{StaticResource PrimaryButton}" Clicked="OnAccept" IsVisible="False"/>
+   <Button x:Name="DeclineButton" Text="Recusar proposta" Style="{StaticResource SecondaryButton}" Clicked="OnDecline" IsVisible="False"/>
+   <Button x:Name="WithdrawButton" Text="Retirar minha proposta" Style="{StaticResource SecondaryButton}" Clicked="OnWithdraw" IsVisible="False"/>
+  </VerticalStackLayout>
+  <Button Text="Ver minhas atividades" Style="{StaticResource TextButton}" Clicked="OnActivities"/>
+ </VerticalStackLayout></ScrollView>
+</ContentPage>

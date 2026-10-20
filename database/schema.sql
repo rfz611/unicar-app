@@ -12,6 +12,12 @@ CREATE TABLE IF NOT EXISTS users (
     ra_enrollment VARCHAR(30) NOT NULL UNIQUE,
     user_type ENUM('DRIVER', 'PASSENGER', 'BOTH') DEFAULT 'BOTH',
     profile_photo_url VARCHAR(255) NULL,
+    cnh_number VARCHAR(11) NULL UNIQUE,
+    cnh_category VARCHAR(2) NULL,
+    cnh_expiry DATE NULL,
+    password_reset_code_hash VARCHAR(255) NULL,
+    password_reset_expires_at DATETIME NULL,
+    password_reset_attempts INT NOT NULL DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );

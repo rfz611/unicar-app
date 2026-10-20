@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:UniCar.Mobile.Controls"
+             x:Class="UniCar.Mobile.Pages.RegisterPage"
+             BackgroundColor="White"
+             SafeAreaEdges="Container"
+             Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="*,Auto">
+
+        <ScrollView Grid.Row="0">
+            <VerticalStackLayout Padding="24,16,24,16" Spacing="18">
+
+                <controls:BackButton />
+
+                <VerticalStackLayout Spacing="10" Margin="0,12,0,4">
+                    <Border BackgroundColor="{StaticResource Brand}"
+                            StrokeThickness="0"
+                            StrokeShape="RoundRectangle 14"
+                            Padding="12,5"
+                            HorizontalOptions="Start">
+                        <Label x:Name="RoleChip" TextColor="White" FontSize="13" FontAttributes="Bold" />
+                    </Border>
+
+                    <Label Text="Criar sua conta" Style="{StaticResource TitleLabel}" />
+                    <Label x:Name="RoleSubtitle" Style="{StaticResource SubtitleLabel}" />
+                </VerticalStackLayout>
+
+                <controls:FormField x:Name="NameField"
+                                    Title="Nome completo"
+                                    Placeholder="Como está na sua matrícula"
+                                    InputKeyboard="Text" />
+
+                <controls:FormField x:Name="EmailField"
+                                    Title="E-mail institucional"
+                                    Placeholder="nome@positivo.edu.br"
+                                    InputKeyboard="Email" />
+
+                <controls:FormField x:Name="RaField"
+                                    Title="RA / Matrícula"
+                                    Placeholder="Seu registro acadêmico"
+                                    MaxLength="30" />
+
+                <controls:FormField x:Name="PhoneField"
+                                    Title="Celular"
+                                    Placeholder="(41) 99999-9999"
+                                    InputKeyboard="Telephone"
+                                    MaxLength="15"
+                                    TextChanged="OnPhoneTextChanged" />
+
+                <controls:FormField x:Name="PasswordField"
+                                    Title="Senha"
+                                    Placeholder="Mínimo de 6 caracteres"
+                                    IsPassword="True" />
+
+                <controls:FormField x:Name="ConfirmField"
+                                    Title="Confirmar senha"
+                                    Placeholder="Repita a senha"
+                                    IsPassword="True" />
+
+                <!-- Visível só para Motorista / Os dois -->
+                <VerticalStackLayout x:Name="CnhSection" Spacing="18" IsVisible="False">
+                    <BoxView HeightRequest="1" Color="#DCE3EF" Margin="0,6,0,0" />
+
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Sua habilitação (CNH)"
+                               FontSize="20" FontAttributes="Bold" TextColor="{StaticResource Brand}" />
+                        <Label Text="Para oferecer caronas, precisamos conferir que você é habilitado para dirigir carro."
+                               Style="{StaticResource SubtitleLabel}" FontSize="14" />
+                    </VerticalStackLayout>
+
+                    <controls:FormField x:Name="CnhField"
+                                        Title="Número da CNH"
+                                        Placeholder="11 dígitos"
+                                        InputKeyboard="Numeric"
+                                        MaxLength="11" />
+
+                    <controls:FormField x:Name="CnhCategoryField"
+                                        Title="Categoria"
+                                        Placeholder="B, C, D, E, AB, AC, AD ou AE"
+                                        MaxLength="2" />
+
+                    <controls:FormField x:Name="CnhExpiryField"
+                                        Title="Validade da CNH"
+                                        Placeholder="dd/mm/aaaa"
+                                        InputKeyboard="Numeric"
+                                        MaxLength="10"
+                                        TextChanged="OnCnhExpiryTextChanged" />
+                </VerticalStackLayout>
+
+                <Border x:Name="ErrorBanner" Style="{StaticResource ErrorBanner}">
+                    <Label x:Name="ErrorLabel" TextColor="{StaticResource Danger}" FontSize="14" />
+                </Border>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <VerticalStackLayout Grid.Row="1" Padding="24,8,24,24" Spacing="16">
+            <Button x:Name="RegisterButton"
+                    Text="Criar conta"
+                    Style="{StaticResource PrimaryButton}"
+                    Clicked="OnRegisterClicked" />
+
+            <Label HorizontalTextAlignment="Center" FontSize="15" TextColor="#5B6B85">
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span Text="Já tem conta? " />
+                        <Span Text="Entrar" TextColor="{StaticResource Brand}" FontAttributes="Bold" />
+                    </FormattedString>
+                </Label.FormattedText>
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnLoginTapped" />
+                </Label.GestureRecognizers>
+            </Label>
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

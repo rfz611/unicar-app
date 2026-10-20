@@ -22,7 +22,17 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
-builder.Services.AddControllers();
+builder.Services.AddScoped<UniCar.API.Services.IEmailSender, UniCar.API.Services.ConsoleEmailSender>();
+builder.Services.AddControllers().AddJsonOptions(o=>o.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter()));
+builder.Services.Configure<UniCar.API.Services.PricingOptions>(builder.Configuration.GetSection("Pricing"));
+builder.Services.AddSingleton<UniCar.API.Services.PricingService>();
+builder.Services.AddScoped<UniCar.API.Services.NegotiationViews>();
+builder.Services.AddScoped<UniCar.API.Services.NegotiationService>();
+builder.Services.AddScoped<UniCar.API.Services.ActivityService>();
+builder.Services.Configure<UniCar.API.Services.Maps.MapsOptions>(builder.Configuration.GetSection("Maps"));
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddHttpClient<UniCar.API.Services.Maps.IRouteProvider,UniCar.API.Services.Maps.GoogleRouteProvider>(client=>client.Timeout=TimeSpan.FromSeconds(12));
+builder.Services.AddScoped<UniCar.API.Services.Maps.RouteQuoteService>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -64,7 +74,12 @@ builder.Services.AddAuthentication(x =>
     };
 });
 
+builder.Services.AddHttpClient<UniCar.API.Services.Maps.GooglePlacesService>(client=>client.Timeout=TimeSpan.FromSeconds(12));
 var app = builder.Build();
+app.Use(async (context,next)=> {
+ try { await next(context); }
+ catch(UniCar.API.Services.TravelException error) { context.Response.StatusCode=error.Status; await context.Response.WriteAsJsonAsync(new { message=error.Message }); }
+});
 
 if (app.Environment.IsDevelopment())
 {
@@ -81,6 +96,7 @@ app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseStaticFiles();
 app.MapControllers();
 
 app.Run();

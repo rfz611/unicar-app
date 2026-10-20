@@ -36,6 +36,29 @@ public class User
     [Column("profile_photo_url")]
     public string? ProfilePhotoUrl { get; set; }
 
+    // --- CNH (obrigatória para DRIVER e BOTH) ---
+    [Column("cnh_number")]
+    [MaxLength(11)]
+    public string? CnhNumber { get; set; }
+
+    [Column("cnh_category")]
+    [MaxLength(2)]
+    public string? CnhCategory { get; set; }
+
+    [Column("cnh_expiry")]
+    public DateOnly? CnhExpiry { get; set; }
+
+    // --- Redefinição de senha (código de 6 dígitos guardado como hash) ---
+    [Column("password_reset_code_hash")]
+    [MaxLength(255)]
+    public string? PasswordResetCodeHash { get; set; }
+
+    [Column("password_reset_expires_at")]
+    public DateTime? PasswordResetExpiresAt { get; set; }
+
+    [Column("password_reset_attempts")]
+    public int PasswordResetAttempts { get; set; }
+
     [Column("created_at")]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

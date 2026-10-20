@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="UniCar.Mobile.Controls.FormField">
+
+    <VerticalStackLayout Spacing="6">
+
+        <Label x:Name="TitleLabel"
+               FontSize="14"
+               FontAttributes="Bold"
+               TextColor="{StaticResource Brand}" />
+
+        <Border x:Name="Frame"
+                BackgroundColor="#F1F4F9"
+                Stroke="Transparent"
+                StrokeThickness="2"
+                StrokeShape="RoundRectangle 8"
+                Padding="14,0"
+                HeightRequest="56">
+
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <Entry x:Name="Input"
+                       BackgroundColor="Transparent"
+                       TextColor="{StaticResource Brand}"
+                       PlaceholderColor="#9FB0D3"
+                       FontSize="16"
+                       VerticalOptions="Center"
+                       Focused="OnFocused"
+                       Unfocused="OnUnfocused"
+                       TextChanged="OnTextChanged" />
+
+                <Label x:Name="ToggleLabel"
+                       Grid.Column="1"
+                       Text="Mostrar"
+                       IsVisible="False"
+                       FontSize="14"
+                       FontAttributes="Bold"
+                       TextColor="{StaticResource Brand}"
+                       VerticalOptions="Center">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnToggleTapped" />
+                    </Label.GestureRecognizers>
+                </Label>
+            </Grid>
+        </Border>
+
+        <Label x:Name="ErrorLabel"
+               IsVisible="False"
+               FontSize="13"
+               TextColor="#E11900" />
+    </VerticalStackLayout>
+</ContentView>

@@ -46,3 +46,15 @@ Plataforma mobile de caronas compartilhadas exclusiva para a comunidade da Unive
 - [ ] **4.1** Testar fluxo completo ponta a ponta (Cadastro -> Criar Carona -> Reservar Vaga)
 - [ ] **4.2** Gravar demonstração do sistema em funcionamento
 '@ | Out-File -FilePath "README.md" -Encoding utf8
+## Aplicativo e recursos atuais
+
+O projeto `src/UniCar.Mobile` usa C#/.NET MAUI 10. Inclui login/cadastro, abas Carro/Moto/Reservas, agendamento, Atividades, ofertas gratuitas ou negociáveis, propostas e busca de endereços brasileiros com sugestões na própria tela.
+
+Configuração de mapas, custos por quilômetro e banco: [docs/MAPAS-E-CONTRIBUICAO.md](docs/MAPAS-E-CONTRIBUICAO.md). As credenciais ficam fora do repositório, em user secrets ou variáveis de ambiente. Verificações disponíveis: [tests/README.md](tests/README.md).
+
+Para executar no Mac com os workloads e Xcode configurados:
+
+```sh
+dotnet run --project src/UniCar.API
+dotnet build src/UniCar.Mobile -t:Run -f net10.0-maccatalyst -p:TargetFrameworks=net10.0-maccatalyst
+```

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:UniCar.Mobile.Controls"
+             x:Class="UniCar.Mobile.Pages.OfferRidePage"
+             BackgroundColor="White" SafeAreaEdges="Container">
+    <Grid RowDefinitions="*,Auto">
+        <ScrollView>
+            <VerticalStackLayout Padding="24,16" Spacing="20">
+                <Button x:Name="CloseButton" Text="Cancelar" Style="{StaticResource TextButton}" HorizontalOptions="Start" Margin="-10,0,0,0" Clicked="OnCloseClicked" />
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Oferecer carona" Style="{StaticResource TitleLabel}" />
+                    <Label Text="Compartilhe seu caminho com a comunidade." Style="{StaticResource SubtitleLabel}" />
+                </VerticalStackLayout>
+                <VerticalStackLayout x:Name="FormFields" Spacing="20">
+                    <VerticalStackLayout x:Name="VehicleSection" Spacing="6">
+                        <Label Text="Veículo" FontSize="14" FontAttributes="Bold" TextColor="{StaticResource Brand}" />
+                        <Picker x:Name="VehiclePicker" SelectedIndex="0" SelectedIndexChanged="OnVehicleChanged" TextColor="{StaticResource Brand}">
+                            <Picker.Items><x:String>Carro</x:String><x:String>Moto</x:String></Picker.Items>
+                        </Picker>
+                    </VerticalStackLayout>
+                    <Label x:Name="VehicleSummaryLabel" FontSize="14" FontAttributes="Bold" TextColor="{StaticResource Brand}" />
+                    <Label x:Name="RouteSummaryLabel" Text="Percurso ainda não selecionado." FontSize="14" TextColor="{StaticResource Grey700}" />
+                    <controls:AddressSearchField x:Name="OriginField" SelectedPointChanged="OnRoutePointChanged" Title="Local de saída" Placeholder="Ex.: Terminal Campo Comprido" />
+                    <controls:AddressSearchField x:Name="DestinationField" SelectedPointChanged="OnRoutePointChanged" Title="Destino" Placeholder="Ex.: UP — Ecoville" />
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="Data e horário de saída" FontSize="14" FontAttributes="Bold" TextColor="{StaticResource Brand}" />
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
+                            <DatePicker x:Name="DepartureDate" Format="dd/MM/yyyy" TextColor="{StaticResource Brand}" SemanticProperties.Description="Data de saída" />
+                            <TimePicker x:Name="DepartureTime" Grid.Column="1" Format="HH:mm" TextColor="{StaticResource Brand}" SemanticProperties.Description="Horário de saída" />
+                        </Grid>
+                    </VerticalStackLayout>
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="Vagas disponíveis" FontSize="14" FontAttributes="Bold" TextColor="{StaticResource Brand}" />
+                        <Picker x:Name="SeatsPicker" SelectedIndexChanged="OnPriceChanged" Title="Selecione" SelectedIndex="0" TextColor="{StaticResource Brand}" SemanticProperties.Description="Quantidade de vagas">
+                            <Picker.Items><x:String>1 vaga</x:String><x:String>2 vagas</x:String><x:String>3 vagas</x:String><x:String>4 vagas</x:String></Picker.Items>
+                        </Picker>
+                    </VerticalStackLayout>
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="Contribuição por passageiro" FontAttributes="Bold" TextColor="{StaticResource Brand}" />
+                        <Picker x:Name="PriceModePicker" SelectedIndex="0" SelectedIndexChanged="OnPriceChanged" TextColor="{StaticResource Brand}"><Picker.Items><x:String>Carona gratuita</x:String><x:String>Negociar contribuição</x:String></Picker.Items></Picker>
+                        <Label x:Name="SuggestionLabel" Text="Gratuita: sem contribuição." TextColor="{StaticResource Grey700}" FontSize="14" />
+                        <Entry x:Name="ReferenceEntry" TextChanged="OnReferenceEdited" IsVisible="False" Keyboard="Numeric" Placeholder="Valor de referência por passageiro (R$)" TextColor="{StaticResource Brand}" />
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+                <Border x:Name="ErrorBanner" Style="{StaticResource ErrorBanner}">
+                    <Label x:Name="ErrorLabel" FontSize="14" TextColor="{StaticResource Danger}" />
+                </Border>
+            </VerticalStackLayout>
+        </ScrollView>
+        <Button x:Name="PublishButton" Grid.Row="1" Text="Publicar carona" Margin="24,8,24,24" Style="{StaticResource PrimaryButton}" Clicked="OnPublishClicked" />
+    </Grid>
+</ContentPage>
