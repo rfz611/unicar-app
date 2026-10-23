@@ -72,6 +72,66 @@ Content-Type: application/json
 DELETE {{api}}/api/me/places/home
 Authorization: Bearer {{token}}
 
+### 4d. Virar motorista: dados da CNH (11 dígitos) e do carro. Status fica None até mandar as duas fotos.
+POST {{api}}/api/driver/application
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "cnh": "62472927637", "cnhExpiry": "12/2030", "plate": "ABC1D23", "model": "Onix 1.0", "color": "Prata" }
+
+### Foto da CNH (jpg/png/webp, até 5 MB). Troque o caminho por uma foto sua.
+POST {{api}}/api/driver/application/cnh-photo
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=UniCar
+
+--UniCar
+Content-Disposition: form-data; name="file"; filename="cnh.jpg"
+Content-Type: image/jpeg
+
+< ./cnh.jpg
+--UniCar--
+
+### Selfie: com as duas fotos, o status vai para InReview
+POST {{api}}/api/driver/application/selfie
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=UniCar
+
+--UniCar
+Content-Disposition: form-data; name="file"; filename="selfie.jpg"
+Content-Type: image/jpeg
+
+< ./selfie.jpg
+--UniCar--
+
+### Situação do pedido (o que falta, motivo da recusa)
+GET {{api}}/api/driver/application
+Authorization: Bearer {{token}}
+
+### Carro do motorista aprovado
+GET {{api}}/api/driver/vehicle
+Authorization: Bearer {{token}}
+
+### 4e. Painel de análise (precisa de Role = Admin no banco; o seed de demonstração cria um admin)
+@adminToken = cole-aqui
+@userId = cole-o-id
+GET {{api}}/api/admin/drivers?status=InReview
+Authorization: Bearer {{adminToken}}
+
+###
+GET {{api}}/api/admin/drivers/{{userId}}/cnh-photo
+Authorization: Bearer {{adminToken}}
+
+###
+POST {{api}}/api/admin/drivers/{{userId}}/approve
+Authorization: Bearer {{adminToken}}
+
+###
+POST {{api}}/api/admin/drivers/{{userId}}/reject
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{ "reason": "Foto da CNH ilegível. Mande outra com boa luz." }
+
 ### 5. Buscar endereço (precisa da chave do Google)
 GET {{api}}/api/places/autocomplete?q=hospital%20cajuru&session=11111111-1111-1111-1111-111111111111
 Authorization: Bearer {{token}}

@@ -9,7 +9,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using UniCar.Api.Auth;
+using UniCar.Api.Common;
 using UniCar.Api.Data;
+using UniCar.Api.Domain;
 using UniCar.Api.Users;
 using Xunit;
 
@@ -25,6 +27,8 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         (Environment.GetEnvironmentVariable("UNICAR_TEST_PG") ?? "Host=localhost;Port=5432;Username=unicar;Password=unicar_dev")
         + $";Database=unicar_test_{Guid.NewGuid():N}";
 
+    private readonly string _storageRoot = Path.Combine(Path.GetTempPath(), $"unicar_test_{Guid.NewGuid():N}");
+
     public FakeEmailSender Emails { get; } = new();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -36,6 +40,7 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
             s.AddDbContext<AppDbContext>(o => o.UseNpgsql(_connectionString));
             s.RemoveAll<IEmailSender>();
             s.AddSingleton<IEmailSender>(Emails);
+            s.Configure<StorageOptions>(o => o.PrivateRoot = _storageRoot);
         });
     }
 
@@ -50,7 +55,16 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         using (var scope = Services.CreateScope())
             await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.EnsureDeletedAsync();
         await DisposeAsync();
+        if (Directory.Exists(_storageRoot)) Directory.Delete(_storageRoot, recursive: true);
     }
+
+    /// <summary>Dá Role = Admin direto no banco (não existe rota para isso).</summary>
+    public Task MakeAdminAsync(Guid userId) => WithDbAsync(async db =>
+    {
+        var user = await db.Users.SingleAsync(u => u.Id == userId);
+        user.Role = Role.Admin;
+        await db.SaveChangesAsync();
+    });
 
     /// <summary>Acesso direto ao banco, para preparar cenários (ex.: aprovar motorista).</summary>
     public async Task WithDbAsync(Func<AppDbContext, Task> action)
@@ -106,6 +120,47 @@ public partial class FakeEmailSender : IEmailSender
 
     [GeneratedRegex(@"\d{6}")]
     private static partial Regex CodeRegex();
+}
+
+/// <summary>CNHs e placas válidas e diferentes para cada teste.</summary>
+public static class TestDriver
+{
+    private static int _next = Random.Shared.Next(100_000_000, 900_000_000);
+    private static int _plate = Random.Shared.Next(0, 17_000);
+
+    public static string Cnh()
+    {
+        while (true)
+        {
+            var candidate = Interlocked.Increment(ref _next).ToString("D9");
+            for (var dv = 0; dv < 100; dv++)
+            {
+                var full = candidate + dv.ToString("D2");
+                if (Api.Common.Cnh.IsValid(full)) return full;
+            }
+        }
+    }
+
+    /// <summary>Placa Mercosul única: três letras + 1 + letra + 2 números.</summary>
+    public static string Plate()
+    {
+        var n = Interlocked.Increment(ref _plate);
+        char L(int i) => (char)('A' + i % 26);
+        return $"{L(n / 676)}{L(n / 26)}{L(n)}1{L(n / 7)}{n % 100:D2}";
+    }
+
+    public static object Request(string? cnh = null, string expiry = "12/2030", string? plate = null) =>
+        new { cnh = cnh ?? Cnh(), cnhExpiry = expiry, plate = plate ?? Plate(), model = "Onix 1.0", color = "Prata" };
+
+    public static readonly byte[] Png = Convert.FromBase64String(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==");
+
+    public static MultipartFormDataContent File(byte[] bytes, string name = "foto.png")
+    {
+        var form = new MultipartFormDataContent();
+        form.Add(new ByteArrayContent(bytes), "file", name);
+        return form;
+    }
 }
 
 /// <summary>CPFs válidos e diferentes para cada cadastro de teste.</summary>

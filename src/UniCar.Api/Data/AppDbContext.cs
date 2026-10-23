@@ -12,6 +12,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<UserPreferences> UserPreferences => Set<UserPreferences>();
     public DbSet<SavedPlace> SavedPlaces => Set<SavedPlace>();
     public DbSet<EmailVerificationCode> EmailVerificationCodes => Set<EmailVerificationCode>();
+    public DbSet<DriverApplication> DriverApplications => Set<DriverApplication>();
+    public DbSet<Vehicle> Vehicles => Set<Vehicle>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -44,6 +46,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.Property(x => x.Gender).HasMaxLength(30);
             e.Property(x => x.Shift).HasConversion<string>().HasMaxLength(10);
             e.Property(x => x.DriverStatus).HasConversion<string>().HasMaxLength(12);
+            e.Property(x => x.Role).HasConversion<string>().HasMaxLength(10);
             e.HasOne(x => x.University).WithMany().HasForeignKey(x => x.UniversityId);
             e.HasOne(x => x.Campus).WithMany().HasForeignKey(x => x.CampusId).OnDelete(DeleteBehavior.SetNull);
             e.HasMany(x => x.SavedPlaces).WithOne().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
@@ -64,6 +67,29 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.Property(x => x.GooglePlaceId).HasMaxLength(300);
             // Uma casa por pessoa (Kind = Home); Work/Other podem repetir.
             e.HasIndex(x => x.UserId).HasFilter("\"Kind\" = 'Home'").IsUnique();
+        });
+        b.Entity<DriverApplication>(e =>
+        {
+            e.HasIndex(x => x.UserId).IsUnique();
+            e.HasIndex(x => x.CnhHash).IsUnique();
+            e.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+            e.Property(x => x.CnhHash).HasMaxLength(64);
+            e.Property(x => x.Plate).HasMaxLength(7);
+            e.Property(x => x.VehicleModel).HasMaxLength(60);
+            e.Property(x => x.VehicleColor).HasMaxLength(30);
+            e.Property(x => x.CnhPhotoFile).HasMaxLength(100);
+            e.Property(x => x.SelfieFile).HasMaxLength(100);
+            e.Property(x => x.RejectionReason).HasMaxLength(300);
+            e.Ignore(x => x.IsComplete);
+        });
+        b.Entity<Vehicle>(e =>
+        {
+            e.Property(x => x.Plate).HasMaxLength(7);
+            e.Property(x => x.Model).HasMaxLength(60);
+            e.Property(x => x.Color).HasMaxLength(30);
+            e.HasIndex(x => x.Plate).HasFilter("\"Active\"").IsUnique();
+            e.HasIndex(x => x.UserId);
+            e.HasOne<User>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
         });
         b.Entity<EmailVerificationCode>(e =>
         {

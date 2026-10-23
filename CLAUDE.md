@@ -18,6 +18,8 @@ O backend faz o trabalho pesado (rota, preço, validação, tempo real); o app s
 - Ainda não existe `appsettings.Local.json` (chave do Google).
 - Banco com **migrations** (`src/UniCar.Api/Data/Migrations`), aplicadas ao subir a API. Nova: `dotnet ef migrations add Nome --project src/UniCar.Api --output-dir Data/Migrations`.
 - Testes de integração (`tests/UniCar.Tests`) sobem a API com um banco PostgreSQL temporário (`ApiFactory`); precisam do PostgreSQL local rodando.
+- Etapas da especificação feitas: 1 (migrations, campus, preferências, casa) e 2 (`Driver/`: pedido de motorista, fotos em `App_Data/private` fora do Git e do wwwroot, painel admin com política `Admin` conferida no banco).
+- Docker não roda neste PC (WSL2/Plataforma de Máquina Virtual desligada); usando PostgreSQL 16 instalado no Windows.
 
 ## O que falta: siga `docs/ESPECIFICACAO.md`
 A especificação lista, tela por tela do protótipo aprovado, cada rota, entidade e regra que falta (caronas marcadas, reservas, viagens, motorista e veículo, pedir agora com SignalR, posição ao vivo, chat, avaliações, foto, preferências). Ela é a fonte da verdade. Se algo nela conflitar com este arquivo, pergunte.

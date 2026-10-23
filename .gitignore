@@ -5,3 +5,4 @@ obj/
 *.user
 keys/
 appsettings.Local.json
+App_Data/

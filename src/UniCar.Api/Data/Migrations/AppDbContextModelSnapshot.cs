@@ -56,6 +56,77 @@ namespace UniCar.Api.Data.Migrations
                     b.ToTable("Campuses");
                 });
 
+            modelBuilder.Entity("UniCar.Api.Domain.DriverApplication", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CnhEncrypted")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateOnly>("CnhExpiresOn")
+                        .HasColumnType("date");
+
+                    b.Property<string>("CnhHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("CnhPhotoFile")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Plate")
+                        .IsRequired()
+                        .HasMaxLength(7)
+                        .HasColumnType("character varying(7)");
+
+                    b.Property<string>("RejectionReason")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<DateTimeOffset?>("ReviewedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ReviewedById")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("SelfieFile")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTimeOffset?>("SubmittedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("VehicleColor")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<string>("VehicleModel")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CnhHash")
+                        .IsUnique();
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("DriverApplications");
+                });
+
             modelBuilder.Entity("UniCar.Api.Domain.EmailVerificationCode", b =>
                 {
                     b.Property<Guid>("Id")
@@ -253,6 +324,11 @@ namespace UniCar.Api.Data.Migrations
                     b.Property<string>("PhotoUrl")
                         .HasColumnType("text");
 
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
                     b.Property<string>("Shift")
                         .IsRequired()
                         .HasMaxLength(10)
@@ -303,6 +379,49 @@ namespace UniCar.Api.Data.Migrations
                     b.ToTable("UserPreferences");
                 });
 
+            modelBuilder.Entity("UniCar.Api.Domain.Vehicle", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Active")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Color")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Model")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<string>("Plate")
+                        .IsRequired()
+                        .HasMaxLength(7)
+                        .HasColumnType("character varying(7)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Plate")
+                        .IsUnique()
+                        .HasFilter("\"Active\"");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Vehicles");
+                });
+
             modelBuilder.Entity("UniCar.Api.Domain.Campus", b =>
                 {
                     b.HasOne("UniCar.Api.Domain.University", null)
@@ -310,6 +429,17 @@ namespace UniCar.Api.Data.Migrations
                         .HasForeignKey("UniversityId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCar.Api.Domain.DriverApplication", b =>
+                {
+                    b.HasOne("UniCar.Api.Domain.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("UniCar.Api.Domain.SavedPlace", b =>
@@ -353,6 +483,15 @@ namespace UniCar.Api.Data.Migrations
                     b.HasOne("UniCar.Api.Domain.User", null)
                         .WithOne("Preferences")
                         .HasForeignKey("UniCar.Api.Domain.UserPreferences", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCar.Api.Domain.Vehicle", b =>
+                {
+                    b.HasOne("UniCar.Api.Domain.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

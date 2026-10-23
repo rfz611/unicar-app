@@ -4,6 +4,9 @@ public enum Shift { Manha, Tarde, Noite }
 
 public enum DriverStatus { None, InReview, Approved, Rejected }
 
+/// <summary>Admin aprova motoristas. Vira admin pelo banco (seed) — não existe rota para isso.</summary>
+public enum Role { User, Admin }
+
 public class User
 {
     public Guid Id { get; set; } = Guid.NewGuid();
@@ -34,6 +37,7 @@ public class User
 
     public string? TrustedContactPhone { get; set; }
     public DriverStatus DriverStatus { get; set; } = DriverStatus.None;
+    public Role Role { get; set; } = Role.User;
 
     public DateTimeOffset EmailVerifiedAt { get; set; }
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;

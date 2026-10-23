@@ -76,7 +76,7 @@ public class AuthController(
         if (email is null) return Unauthorized();
 
         var errors = UserValidation.Validate(req.FullName, req.BirthDate, req.Cpf, req.Phone, req.Course, req.Period, req.Shift,
-            DateOnly.FromDateTime(clock.GetLocalNow().DateTime), out var birth, out var shift);
+            LocalTime.Today(clock), out var birth, out var shift);
         if (errors is not null) return BadRequest(errors);
 
         if (await db.Users.AnyAsync(u => u.Email == email, ct))

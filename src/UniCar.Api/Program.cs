@@ -30,6 +30,8 @@ builder.Services.AddDataProtection()
     .SetApplicationName("UniCar")
     .PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(builder.Environment.ContentRootPath, "keys")));
 builder.Services.AddSingleton<SensitiveData>();
+builder.Services.Configure<StorageOptions>(config.GetSection(StorageOptions.Section));
+builder.Services.AddSingleton<PrivateStorage>();
 
 // E-mail: sem SMTP configurado, o código aparece no console da API
 var smtp = config.GetSection(SmtpOptions.Section).Get<SmtpOptions>() ?? new SmtpOptions();
@@ -73,7 +75,13 @@ builder.Services.AddAuthorization(o =>
         .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme)
         .RequireAuthenticatedUser()
         .RequireClaim(TokenPurpose.Claim, TokenPurpose.Signup));
+    o.AddPolicy(AdminRequirement.Policy, p => p
+        .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme)
+        .RequireAuthenticatedUser()
+        .RequireClaim(TokenPurpose.Claim, TokenPurpose.Access)
+        .AddRequirements(new AdminRequirement()));
 });
+builder.Services.AddScoped<IAuthorizationHandler, AdminHandler>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

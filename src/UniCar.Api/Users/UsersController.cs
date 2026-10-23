@@ -39,7 +39,7 @@ public class UsersController(AppDbContext db, SensitiveData sensitive, TimeProvi
         var cpf = sensitive.Decrypt(user.CpfEncrypted);
 
         var error = UserValidation.Validate(req.FullName, req.BirthDate, cpf, req.Phone, req.Course, req.Period, req.Shift,
-            DateOnly.FromDateTime(clock.GetLocalNow().DateTime), out var birth, out var shift);
+            LocalTime.Today(clock), out var birth, out var shift);
         if (error is not null) return BadRequest(error);
         if (req.Gender is not null && !Genders.Contains(req.Gender))
             return BadRequest(new ApiError("invalid_gender", "Opção de gênero inválida."));
