@@ -9,6 +9,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<UniversityDomain> UniversityDomains => Set<UniversityDomain>();
     public DbSet<Campus> Campuses => Set<Campus>();
     public DbSet<User> Users => Set<User>();
+    public DbSet<UserPreferences> UserPreferences => Set<UserPreferences>();
     public DbSet<SavedPlace> SavedPlaces => Set<SavedPlace>();
     public DbSet<EmailVerificationCode> EmailVerificationCodes => Set<EmailVerificationCode>();
 
@@ -44,13 +45,25 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.Property(x => x.Shift).HasConversion<string>().HasMaxLength(10);
             e.Property(x => x.DriverStatus).HasConversion<string>().HasMaxLength(12);
             e.HasOne(x => x.University).WithMany().HasForeignKey(x => x.UniversityId);
+            e.HasOne(x => x.Campus).WithMany().HasForeignKey(x => x.CampusId).OnDelete(DeleteBehavior.SetNull);
             e.HasMany(x => x.SavedPlaces).WithOne().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Preferences).WithOne().HasForeignKey<UserPreferences>(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+            e.Ignore(x => x.MainCampus);
+        });
+        b.Entity<UserPreferences>(e =>
+        {
+            e.HasKey(x => x.UserId);
+            e.Property(x => x.Theme).HasConversion<string>().HasMaxLength(10);
         });
         b.Entity<SavedPlace>(e =>
         {
             e.Property(x => x.Kind).HasConversion<string>().HasMaxLength(10);
             e.Property(x => x.Label).HasMaxLength(60);
             e.Property(x => x.Address).HasMaxLength(300);
+            e.Property(x => x.Neighborhood).HasMaxLength(120);
+            e.Property(x => x.GooglePlaceId).HasMaxLength(300);
+            // Uma casa por pessoa (Kind = Home); Work/Other podem repetir.
+            e.HasIndex(x => x.UserId).HasFilter("\"Kind\" = 'Home'").IsUnique();
         });
         b.Entity<EmailVerificationCode>(e =>
         {

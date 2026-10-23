@@ -16,7 +16,8 @@ O backend faz o trabalho pesado (rota, preço, validação, tempo real); o app s
 - Correções já feitas: desconto da carona marcada antes do mínimo; sem chave do Google, busca e preço respondem 503.
 - O computador foi formatado: o banco do Docker foi apagado (rodar `docker compose up -d` de novo) e `bin/obj` apontam para o caminho antigo (um `dotnet build` resolve).
 - Ainda não existe `appsettings.Local.json` (chave do Google).
-- Banco criado com `EnsureCreated`; trocar por migrations na próxima etapa.
+- Banco com **migrations** (`src/UniCar.Api/Data/Migrations`), aplicadas ao subir a API. Nova: `dotnet ef migrations add Nome --project src/UniCar.Api --output-dir Data/Migrations`.
+- Testes de integração (`tests/UniCar.Tests`) sobem a API com um banco PostgreSQL temporário (`ApiFactory`); precisam do PostgreSQL local rodando.
 
 ## O que falta: siga `docs/ESPECIFICACAO.md`
 A especificação lista, tela por tela do protótipo aprovado, cada rota, entidade e regra que falta (caronas marcadas, reservas, viagens, motorista e veículo, pedir agora com SignalR, posição ao vivo, chat, avaliações, foto, preferências). Ela é a fonte da verdade. Se algo nela conflitar com este arquivo, pergunte.

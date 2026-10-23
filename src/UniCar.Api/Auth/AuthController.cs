@@ -102,7 +102,8 @@ public class AuthController(
             Course = req.Course,
             Period = req.Period,
             Shift = shift,
-            EmailVerifiedAt = clock.GetUtcNow()
+            EmailVerifiedAt = clock.GetUtcNow(),
+            Preferences = new UserPreferences()
         };
         db.Users.Add(user);
         await db.SaveChangesAsync(ct);

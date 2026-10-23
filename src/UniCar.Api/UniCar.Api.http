@@ -33,6 +33,45 @@ Content-Type: application/json
 GET {{api}}/api/users/me
 Authorization: Bearer {{token}}
 
+### 4a. Trocar o campus do atalho "Minha faculdade" (ids em GET /api/universities)
+PUT {{api}}/api/users/me/campus
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "campusId": 2 }
+
+### 4b. Configurações (tema System | Light | Dark)
+GET {{api}}/api/users/me/preferences
+Authorization: Bearer {{token}}
+
+###
+PUT {{api}}/api/users/me/preferences
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "theme": "Dark", "rideAlerts": true, "alwaysShareTrip": false, "showCourse": true }
+
+### 4c. Casa: 404 home_not_set na primeira vez
+GET {{api}}/api/me/places/home
+Authorization: Bearer {{token}}
+
+### Definir casa (mande o que veio de GET /api/places/{id})
+PUT {{api}}/api/me/places/home
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "address": "R. Bispo Dom José, 2000 - Batel, Curitiba - PR",
+  "neighborhood": "Batel",
+  "googlePlaceId": "ChIJ...",
+  "latitude": -25.4420,
+  "longitude": -49.2890
+}
+
+###
+DELETE {{api}}/api/me/places/home
+Authorization: Bearer {{token}}
+
 ### 5. Buscar endereço (precisa da chave do Google)
 GET {{api}}/api/places/autocomplete?q=hospital%20cajuru&session=11111111-1111-1111-1111-111111111111
 Authorization: Bearer {{token}}

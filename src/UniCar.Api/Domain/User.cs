@@ -12,6 +12,9 @@ public class User
     public required string Email { get; set; }
     public int UniversityId { get; set; }
     public University? University { get; set; }
+    /// <summary>Campus escolhido para o atalho "Minha faculdade". Vazio = primeiro campus da faculdade.</summary>
+    public int? CampusId { get; set; }
+    public Campus? Campus { get; set; }
 
     public required string FullName { get; set; }
     public DateOnly BirthDate { get; set; }
@@ -36,6 +39,24 @@ public class User
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 
     public List<SavedPlace> SavedPlaces { get; set; } = new();
+    public UserPreferences? Preferences { get; set; }
+
+    /// <summary>O campus do atalho "Minha faculdade": o escolhido ou o primeiro da faculdade.</summary>
+    public Campus? MainCampus => Campus ?? University?.Campuses.OrderBy(c => c.Id).FirstOrDefault();
+}
+
+public enum Theme { System, Light, Dark }
+
+/// <summary>Tela de Configurações. Uma linha por usuário, criada no cadastro.</summary>
+public class UserPreferences
+{
+    public Guid UserId { get; set; }
+    public Theme Theme { get; set; } = Theme.System;
+    /// <summary>Avisos de carona (nova carona para o destino, mudança de horário etc.).</summary>
+    public bool RideAlerts { get; set; } = true;
+    public bool AlwaysShareTrip { get; set; }
+    /// <summary>Outros universitários veem o curso no perfil público.</summary>
+    public bool ShowCourse { get; set; } = true;
 }
 
 public enum SavedPlaceKind { Home, Work, Other }

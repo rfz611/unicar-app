@@ -44,8 +44,18 @@ dotnet run --project src\UniCar.Api
 Abra **http://localhost:5080** — cai no Swagger, onde dá para testar cada rota.
 O arquivo `src/UniCar.Api/UniCar.Api.http` tem o passo a passo do login pronto para o VS Code (extensão REST Client) ou Visual Studio.
 
-**Sem Docker?** Instale o PostgreSQL, crie o usuário `unicar` com senha `unicar_dev` e o banco `unicar`,
+**Sem Docker?** Instale o PostgreSQL, crie o usuário `unicar` com senha `unicar_dev` (com permissão `CREATEDB`) e o banco `unicar`,
 ou troque a `ConnectionStrings:Default`.
+
+As tabelas são criadas pelas **migrations** quando a API sobe. Para criar uma nova depois de mudar o modelo:
+
+```powershell
+dotnet tool restore
+dotnet ef migrations add NomeDaMudanca --project src\UniCar.Api --output-dir Data/Migrations
+```
+
+Os testes de integração criam um banco temporário `unicar_test_...` no mesmo PostgreSQL e apagam no fim
+(por isso o `CREATEDB`). Outro servidor: variável `UNICAR_TEST_PG`.
 
 ### O código de verificação em desenvolvimento
 

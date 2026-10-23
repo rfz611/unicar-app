@@ -96,11 +96,12 @@ builder.Services.AddCors(o => o.AddDefaultPolicy(p => p.AllowAnyOrigin().AllowAn
 
 var app = builder.Build();
 
-// Cria as tabelas e as faculdades iniciais (desenvolvimento). Em produção, usar migrations.
+// Aplica as migrations pendentes e cadastra as faculdades iniciais.
+// Nova migration: dotnet ef migrations add Nome --project src/UniCar.Api
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await db.Database.EnsureCreatedAsync();
+    await db.Database.MigrateAsync();
     await SeedData.EnsureSeededAsync(db);
 }
 
