@@ -19,6 +19,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Reservation> Reservations => Set<Reservation>();
     public DbSet<TimeSuggestion> TimeSuggestions => Set<TimeSuggestion>();
     public DbSet<RouteAlert> RouteAlerts => Set<RouteAlert>();
+    public DbSet<RideRequest> RideRequests => Set<RideRequest>();
+    public DbSet<Trip> Trips => Set<Trip>();
+    public DbSet<TripPassenger> TripPassengers => Set<TripPassenger>();
+    public DbSet<Rating> Ratings => Set<Rating>();
+    public DbSet<Message> Messages => Set<Message>();
+    public DbSet<TripShare> TripShares => Set<TripShare>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -130,6 +136,64 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.HasOne<User>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
             e.Property(x => x.Label).HasMaxLength(300);
             e.HasIndex(x => x.UserId);
+        });
+        b.Entity<RideRequest>(e =>
+        {
+            e.HasOne(x => x.Passenger).WithMany().HasForeignKey(x => x.PassengerId).OnDelete(DeleteBehavior.Cascade);
+            e.OwnsOne(x => x.Origin, ConfigurePlace);
+            e.OwnsOne(x => x.Destination, ConfigurePlace);
+            e.Property(x => x.Status).HasConversion<string>().HasMaxLength(12);
+            e.Property(x => x.Price).HasPrecision(10, 2);
+            e.Property(x => x.DriverAmount).HasPrecision(10, 2);
+            e.HasIndex(x => new { x.Status, x.CreatedAt });
+            e.HasIndex(x => x.PassengerId);
+        });
+        b.Entity<Trip>(e =>
+        {
+            e.HasOne(x => x.Driver).WithMany().HasForeignKey(x => x.DriverId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Vehicle).WithMany().HasForeignKey(x => x.VehicleId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<Ride>().WithMany().HasForeignKey(x => x.RideId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne<RideRequest>().WithMany().HasForeignKey(x => x.RideRequestId).OnDelete(DeleteBehavior.SetNull);
+            e.OwnsOne(x => x.Origin, ConfigurePlace);
+            e.OwnsOne(x => x.Destination, ConfigurePlace);
+            e.Property(x => x.Mode).HasConversion<string>().HasMaxLength(10);
+            e.Property(x => x.Status).HasConversion<string>().HasMaxLength(14);
+            // uma corrida por carona marcada
+            e.HasIndex(x => x.RideId).IsUnique();
+            e.HasIndex(x => new { x.DriverId, x.Status });
+            e.Ignore(x => x.IsActive);
+        });
+        b.Entity<TripPassenger>(e =>
+        {
+            e.HasKey(x => new { x.TripId, x.PassengerId });
+            e.HasOne(x => x.Trip).WithMany(x => x.Passengers).HasForeignKey(x => x.TripId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Passenger).WithMany().HasForeignKey(x => x.PassengerId).OnDelete(DeleteBehavior.Cascade);
+            e.Property(x => x.Amount).HasPrecision(10, 2);
+            e.Property(x => x.DriverAmount).HasPrecision(10, 2);
+            e.Property(x => x.PaymentMethod).HasConversion<string>().HasMaxLength(6);
+            e.Property(x => x.PaymentStatus).HasConversion<string>().HasMaxLength(16);
+            e.HasIndex(x => x.PassengerId);
+        });
+        b.Entity<Rating>(e =>
+        {
+            e.HasOne<Trip>().WithMany().HasForeignKey(x => x.TripId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne<User>().WithMany().HasForeignKey(x => x.FromUserId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne<User>().WithMany().HasForeignKey(x => x.ToUserId).OnDelete(DeleteBehavior.Cascade);
+            e.HasIndex(x => new { x.TripId, x.FromUserId, x.ToUserId }).IsUnique();
+            e.HasIndex(x => x.ToUserId);
+        });
+        b.Entity<Message>(e =>
+        {
+            e.HasOne(x => x.Author).WithMany().HasForeignKey(x => x.AuthorId).OnDelete(DeleteBehavior.Cascade);
+            e.Property(x => x.Text).HasMaxLength(500);
+            e.Property(x => x.Kind).HasConversion<string>().HasMaxLength(8);
+            e.HasIndex(x => new { x.ConversationId, x.CreatedAt });
+        });
+        b.Entity<TripShare>(e =>
+        {
+            e.HasOne(x => x.Trip).WithMany().HasForeignKey(x => x.TripId).OnDelete(DeleteBehavior.Cascade);
+            e.Property(x => x.TokenHash).HasMaxLength(64);
+            e.HasIndex(x => x.TokenHash).IsUnique();
         });
         b.Entity<EmailVerificationCode>(e =>
         {

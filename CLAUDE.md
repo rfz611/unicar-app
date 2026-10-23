@@ -20,7 +20,9 @@ O backend faz o trabalho pesado (rota, preço, validação, tempo real); o app s
 - Testes de integração (`tests/UniCar.Tests`) sobem a API com um banco PostgreSQL temporário (`ApiFactory`); precisam do PostgreSQL local rodando.
 - Etapas da especificação feitas: 1 (migrations, campus, preferências, casa) e 2 (`Driver/`: pedido de motorista, fotos em `App_Data/private` fora do Git e do wwwroot, painel admin com política `Admin` conferida no banco).
 - Etapa 3 (`Rides/`): caronas marcadas, busca, reservas (última vaga protegida por `xmin`), sugestão de horário, Viagens, recentes, alertas "Me avise". Pendências para a etapa 4 marcadas com `TODO etapa 4` (chat e avisos via SignalR). Sem chave do Google, "passa por você" usa estimativa (`Geo.EstimateRoute`, `pickup.estimated = true`); publicar carona exige a chave (503).
-- Etapa 6: `Data/DemoSeed.cs` (contas `*.demo@`, só em Development com `Demo:Enabled`), `POST /api/dev/demo/reset` e `POST /api/dev/login`. Etapa 4 (SignalR) e 5 ainda não feitas.
+- Etapa 6: `Data/DemoSeed.cs` (contas `*.demo@`, só em Development com `Demo:Enabled`), `POST /api/dev/demo/reset` e `POST /api/dev/login`.
+- Etapa 4: hub `/hubs/trips` (`Realtime/`), pedir agora e corridas (`Trips/`), chat (`Chat/`). Presença de motoristas em memória (`DriverPresence`). `RouteService`: sem chave do Google, estima a rota só se `GoogleMaps:EstimateWhenNotConfigured` (ligado em Development); em produção continua 503.
+- Falta a etapa 5 (média das avaliações no perfil público, foto de perfil). As notas já são gravadas em `Rating` ao pagar.
 - Docker não roda neste PC (WSL2/Plataforma de Máquina Virtual desligada); usando PostgreSQL 16 instalado no Windows.
 
 ## O que falta: siga `docs/ESPECIFICACAO.md`

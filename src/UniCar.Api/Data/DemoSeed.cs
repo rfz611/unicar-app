@@ -64,8 +64,11 @@ public class DemoSeed(AppDbContext db, SensitiveData sensitive, PricingService p
     {
         var ids = await db.Users.Where(u => u.Email.Contains(Marker)).Select(u => u.Id).ToListAsync(ct);
         foreach (var id in ids) storage.DeleteUserFolder(id);
-        // caronas antes dos usuários: Ride → Vehicle é Restrict
+        // corridas e caronas antes dos usuários: Trip/Ride → Vehicle é Restrict
+        await db.Trips.Where(t => ids.Contains(t.DriverId)).ExecuteDeleteAsync(ct);
         await db.Rides.Where(r => ids.Contains(r.DriverId)).ExecuteDeleteAsync(ct);
+        await db.Messages.Where(m => m.AuthorId == null && !db.Trips.Any(t => t.Id == m.ConversationId)
+                                     && !db.Rides.Any(r => r.Id == m.ConversationId)).ExecuteDeleteAsync(ct);
         await db.Users.Where(u => ids.Contains(u.Id)).ExecuteDeleteAsync(ct);
         await CreateAsync(ct);
     }

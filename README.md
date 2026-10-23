@@ -77,6 +77,29 @@ universitários e caronas de exemplo. Todas as contas terminam em `.demo@...`:
 - Fora de Development, ou com `Demo:Enabled = false`, as rotas `/api/dev` respondem 404 e nada é criado.
 - Os preços das caronas de exemplo usam a rota estimada (sem chamar o Google), então funcionam sem chave.
 
+### Tempo real (SignalR)
+
+Hub em `/hubs/trips`, autenticado com o token de acesso (`?access_token=` ou header). No app (Expo):
+
+```js
+import * as signalR from "@microsoft/signalr";
+const hub = new signalR.HubConnectionBuilder()
+  .withUrl(`${API}/hubs/trips`, { accessTokenFactory: () => token })
+  .withAutomaticReconnect()
+  .build();
+hub.on("TripUpdated", trip => ...);          // aceito, chegou, em viagem, chegada
+hub.on("DriverLocation", p => ...);          // { tripId, latitude, longitude, at }
+hub.on("MessageReceived", m => ...);         // chat
+await hub.start();
+await hub.invoke("UpdateLocation", tripId, lat, lng); // motorista, a cada ~3 s
+```
+
+Eventos: `RideRequested`, `RideRequestClosed`, `TripUpdated`, `DriverLocation`, `MessageReceived`, `Typing`,
+`RideUpdated`, `TimeSuggested`, `RouteAlertMatched`. Métodos: `UpdateLocation`, `UpdateDriverPosition`, `SendMessage`, `Typing`.
+
+**Sem chave do Google em Development**, preço e rota usam estimativa (`estimated: true` nas respostas) para a
+demonstração funcionar. Em produção (`GoogleMaps:EstimateWhenNotConfigured` desligado) continua 503.
+
 ### O código de verificação em desenvolvimento
 
 Sem SMTP configurado, a API **não envia e-mail**: o código aparece no terminal onde a API está rodando,

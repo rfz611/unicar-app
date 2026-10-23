@@ -234,6 +234,89 @@ Content-Type: application/json
 GET {{api}}/api/route-alerts
 Authorization: Bearer {{token}}
 
+### 10. PEDIR AGORA — motorista avisa que está dirigindo (posição + destino). Renove a cada < 2 min.
+### Tempo real: conecte no hub {{api}}/hubs/trips?access_token=TOKEN e escute RideRequested, TripUpdated,
+### DriverLocation, MessageReceived, Typing, RideUpdated, TimeSuggested, RouteAlertMatched.
+@driverToken = cole-aqui
+POST {{api}}/api/driver/online
+Authorization: Bearer {{driverToken}}
+Content-Type: application/json
+
+{ "latitude": -25.4420, "longitude": -49.2890, "destinationLatitude": -25.4507, "destinationLongitude": -49.2316 }
+
+### Passageiro pede ("Procurando colegas"). Motoristas com desvio até 2 km / 5 min recebem RideRequested.
+POST {{api}}/api/ride-requests
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "origin": { "address": "Av. República Argentina, 1500 - Água Verde", "neighborhood": "Água Verde", "latitude": -25.4560, "longitude": -49.2810 },
+  "destination": { "address": "Av. Cel. Francisco H. dos Santos, 100 - Jardim das Américas", "neighborhood": "Jardim das Américas", "latitude": -25.4507, "longitude": -49.2316 }
+}
+
+### Situação do pedido (Searching | Accepted | Cancelled | Expired)
+@requestId = cole-o-id
+GET {{api}}/api/ride-requests/{{requestId}}
+Authorization: Bearer {{token}}
+
+### Cancelar enquanto procura
+DELETE {{api}}/api/ride-requests/{{requestId}}
+Authorization: Bearer {{token}}
+
+### Motorista: pedidos abertos no meu caminho
+GET {{api}}/api/driver/ride-requests
+Authorization: Bearer {{driverToken}}
+
+### Motorista aceita (o primeiro leva) → vira corrida
+POST {{api}}/api/ride-requests/{{requestId}}/accept
+Authorization: Bearer {{driverToken}}
+
+### Corrida ao vivo (posição, ETA, status, meu pagamento)
+@tripId = cole-o-id
+GET {{api}}/api/trips/{{tripId}}
+Authorization: Bearer {{token}}
+
+### Status (motorista): DriverArrived → InProgress → Completed. Cancelled: qualquer um, antes de embarcar.
+POST {{api}}/api/trips/{{tripId}}/status
+Authorization: Bearer {{driverToken}}
+Content-Type: application/json
+
+{ "status": "DriverArrived" }
+
+### Compartilhar trajeto: link público por 4 h
+POST {{api}}/api/trips/{{tripId}}/share
+Authorization: Bearer {{token}}
+
+### O que o contato de confiança vê (sem login)
+@shareToken = cole-aqui
+GET {{api}}/api/public/trips/{{shareToken}}
+
+### "Você chegou": Pix ou Card + nota 1–5
+POST {{api}}/api/trips/{{tripId}}/complete
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "paymentMethod": "Pix", "rating": 5 }
+
+### Carona marcada: motorista começa (30 min antes até 2 h depois) → corrida com os passageiros
+POST {{api}}/api/rides/{{rideId}}/start
+Authorization: Bearer {{driverToken}}
+
+### 11. CHAT — conversationId = id da carona marcada (rideId) ou da corrida de pedir agora (tripId)
+GET {{api}}/api/conversations/{{rideId}}/messages
+Authorization: Bearer {{token}}
+
+### Enviar sem SignalR (pelo hub: SendMessage(conversationId, text); "digitando": Typing(conversationId))
+POST {{api}}/api/conversations/{{rideId}}/messages
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "text": "Estou chegando!" }
+
+### Respostas rápidas
+GET {{api}}/api/conversations/quick-replies
+Authorization: Bearer {{token}}
+
 ### 5. Buscar endereço (precisa da chave do Google)
 GET {{api}}/api/places/autocomplete?q=hospital%20cajuru&session=11111111-1111-1111-1111-111111111111
 Authorization: Bearer {{token}}

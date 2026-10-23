@@ -13,7 +13,8 @@ public record CreateRideRequest(PlaceInput Origin, PlaceInput Destination, strin
 public record EstimateRequest(PlaceInput Origin, PlaceInput Destination);
 
 /// <summary>"Você recebe por passageiro R$": <see cref="DriverAmountPerSeat"/>.</summary>
-public record RideEstimateDto(double Km, int Minutes, decimal PricePerSeat, decimal DriverAmountPerSeat, string? EncodedPolyline);
+public record RideEstimateDto(double Km, int Minutes, decimal PricePerSeat, decimal DriverAmountPerSeat, string? EncodedPolyline,
+    bool Estimated = false);
 
 /// <summary>
 /// Saída da carona. Para quem não está na carona, só o bairro (pode ser a casa do motorista):
@@ -44,9 +45,12 @@ public record TimeSuggestionRequest(int Minutes);
 public record TimeSuggestionDto(Guid Id, Guid RideId, Guid PassengerId, string PassengerFirstName, int Minutes, string Status,
     string CurrentDepartureTime, string SuggestedDepartureTime, DateTimeOffset CreatedAt);
 
-/// <summary>Item da aba Viagens. <see cref="Kind"/>: Passenger (reservei) ou Driver (ofereci).</summary>
+/// <summary>
+/// Item da aba Viagens. <see cref="Kind"/>: Passenger ou Driver. <see cref="Mode"/>: Scheduled (carona marcada,
+/// tem RideId) ou Now (pedir agora). <see cref="TripId"/>: corrida ao vivo, quando já começou (GET /api/trips/{id}).
+/// </summary>
 public record TripItemDto(
-    string Kind, Guid RideId, Guid? ReservationId, string Status,
+    string Kind, string Mode, Guid? RideId, Guid? TripId, Guid? ReservationId, string Status,
     DateTimeOffset DepartureAt, string DepartureDate, string DepartureTime,
     string Origin, string Destination,
     decimal Amount,              // passageiro: quanto paga; motorista: quanto recebe pelos lugares reservados

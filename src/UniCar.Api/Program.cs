@@ -6,8 +6,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.SignalR;
 using UniCar.Api.Auth;
+using UniCar.Api.Chat;
 using UniCar.Api.Common;
+using UniCar.Api.Realtime;
+using UniCar.Api.Trips;
 using UniCar.Api.Data;
 using UniCar.Api.Places;
 using UniCar.Api.Pricing;
@@ -46,8 +50,17 @@ builder.Services.AddScoped<EmailCodeService>();
 builder.Services.AddSingleton<TokenService>();
 builder.Services.AddSingleton<PricingService>();
 builder.Services.AddHttpClient<IMapsClient, GoogleMapsClient>(c => c.Timeout = TimeSpan.FromSeconds(10));
+builder.Services.AddScoped<RouteService>();
 builder.Services.Configure<DemoOptions>(config.GetSection(DemoOptions.Section));
 builder.Services.AddScoped<DemoSeed>();
+
+// Tempo real (SignalR): pedir agora, posição ao vivo, status, chat
+builder.Services.AddSignalR();
+builder.Services.AddSingleton<IUserIdProvider, SubUserIdProvider>();
+builder.Services.AddSingleton<IRealtime, SignalRRealtime>();
+builder.Services.AddSingleton<DriverPresence>();
+builder.Services.AddScoped<TripService>();
+builder.Services.AddScoped<ChatService>();
 
 // Login (JWT)
 var jwt = config.GetSection(JwtOptions.Section).Get<JwtOptions>() ?? new JwtOptions();
@@ -64,6 +77,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = jwt.Audience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.SigningKey)),
             ClockSkew = TimeSpan.FromMinutes(1)
+        };
+        // WebSocket não manda header: o SignalR passa o token em ?access_token=
+        o.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = ctx =>
+            {
+                var token = ctx.Request.Query["access_token"];
+                if (!string.IsNullOrEmpty(token) && ctx.HttpContext.Request.Path.StartsWithSegments("/hubs"))
+                    ctx.Token = token;
+                return Task.CompletedTask;
+            }
         };
     });
 
@@ -143,6 +167,7 @@ app.Use(async (ctx, next) =>
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHub<TripsHub>("/hubs/trips");
 app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
 
 app.Run();

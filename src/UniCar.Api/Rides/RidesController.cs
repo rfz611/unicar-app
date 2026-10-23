@@ -8,6 +8,7 @@ using UniCar.Api.Data;
 using UniCar.Api.Domain;
 using UniCar.Api.Places;
 using UniCar.Api.Pricing;
+using UniCar.Api.Realtime;
 
 namespace UniCar.Api.Rides;
 
@@ -16,7 +17,8 @@ namespace UniCar.Api.Rides;
 [Route("api/rides")]
 [Authorize]
 public class RidesController(
-    AppDbContext db, IMapsClient maps, PricingService pricing, IOptions<GoogleMapsOptions> region, TimeProvider clock)
+    AppDbContext db, RouteService routes, PricingService pricing, IOptions<GoogleMapsOptions> region, TimeProvider clock,
+    IRealtime realtime)
     : ControllerBase
 {
     private Guid Me => User.UserId()!.Value;
@@ -25,11 +27,11 @@ public class RidesController(
     [HttpPost("estimate")]
     public async Task<IActionResult> Estimate(EstimateRequest req, CancellationToken ct)
     {
-        var route = await maps.ComputeRouteAsync(
+        var (route, estimated) = await routes.GetAsync(
             new LatLng(req.Origin.Latitude, req.Origin.Longitude), new LatLng(req.Destination.Latitude, req.Destination.Longitude), ct);
         if (route is null) return BadRequest(new ApiError("no_route", "Não encontramos rota entre esses pontos."));
         var q = pricing.Quote(route.Km, route.Minutes, RideMode.Scheduled);
-        return Ok(new RideEstimateDto(q.Km, q.Minutes, q.Total, q.DriverAmount, route.EncodedPolyline));
+        return Ok(new RideEstimateDto(q.Km, q.Minutes, q.Total, q.DriverAmount, route.EncodedPolyline, estimated));
     }
 
     /// <summary>Publicar carona. Só motorista aprovado. O preço vem da rota real, nunca do app.</summary>
@@ -46,7 +48,7 @@ public class RidesController(
 
         var origin = new LatLng(req.Origin.Latitude, req.Origin.Longitude);
         var destination = new LatLng(req.Destination.Latitude, req.Destination.Longitude);
-        var route = await maps.ComputeRouteAsync(origin, destination, ct);
+        var (route, _) = await routes.GetAsync(origin, destination, ct);
         if (route is null) return BadRequest(new ApiError("no_route", "Não encontramos rota entre esses pontos."));
         var price = pricing.Quote(route.Km, route.Minutes, RideMode.Scheduled);
 
@@ -59,8 +61,10 @@ public class RidesController(
             Km = price.Km, Minutes = price.Minutes, EncodedPolyline = route.EncodedPolyline
         };
         db.Rides.Add(ride);
-        await MatchRouteAlertsAsync(ride, ct);
+        var matched = await MatchRouteAlertsAsync(ride, ct);
         await db.SaveChangesAsync(ct);
+        foreach (var alert in matched)
+            await realtime.RouteAlertMatchedAsync(alert.UserId, RouteAlertDto.From(alert));
 
         return CreatedAtAction(nameof(Get), new { id = ride.Id }, RideMapper.ToDto(ride, Me, reservedByMe: false));
     }
@@ -138,13 +142,17 @@ public class RidesController(
 
         ride.Status = RideStatus.Cancelled;
         ride.CancelledAt = now;
+        var passengers = new List<Guid>();
         foreach (var r in ride.Reservations.Where(r => r.Status == ReservationStatus.Confirmed))
         {
             r.Status = ReservationStatus.Cancelled;
             r.CancelledAt = now;
+            passengers.Add(r.PassengerId);
         }
         ride.SeatsTaken = 0;
         await db.SaveChangesAsync(ct);
+        await realtime.RideUpdatedAsync(passengers, new RideUpdatedEvent(
+            ride.Id, ride.Status.ToString(), ride.DepartureAt, RideMapper.Time(ride.DepartureAt), "O motorista cancelou a carona."));
         return NoContent();
     }
 
@@ -175,11 +183,7 @@ public class RidesController(
     private async Task<PickupDto> PickupAsync(Ride ride, LatLng passenger, CancellationToken ct)
     {
         var start = new LatLng(ride.Origin.Latitude, ride.Origin.Longitude);
-        RouteInfo? route = null;
-        try { route = await maps.ComputeRouteAsync(start, passenger, ct); }
-        catch (MapsNotConfiguredException) { }
-        var estimated = route is null;
-        route ??= Geo.EstimateRoute(start, passenger);
+        var (route, estimated) = await routes.GetOrEstimateAsync(start, passenger, ct);
 
         var minutes = (int)Math.Round(route.Minutes);
         var at = ride.DepartureAt.AddMinutes(minutes);
@@ -187,7 +191,7 @@ public class RidesController(
     }
 
     /// <summary>Marca os alertas "Me avise" cujo destino fica perto do destino da carona nova.</summary>
-    private async Task MatchRouteAlertsAsync(Ride ride, CancellationToken ct)
+    private async Task<List<RouteAlert>> MatchRouteAlertsAsync(Ride ride, CancellationToken ct)
     {
         var lat = ride.Destination.Latitude;
         var lng = ride.Destination.Longitude;
@@ -196,11 +200,13 @@ public class RidesController(
                         && a.Latitude >= lat - 0.1 && a.Latitude <= lat + 0.1
                         && a.Longitude >= lng - 0.1 && a.Longitude <= lng + 0.1)
             .ToListAsync(ct);
-        foreach (var a in alerts.Where(a => Geo.Km(a.Latitude, a.Longitude, lat, lng) <= a.RadiusKm))
+        var matched = alerts.Where(a => Geo.Km(a.Latitude, a.Longitude, lat, lng) <= a.RadiusKm).ToList();
+        foreach (var a in matched)
         {
             a.MatchedRideId = ride.Id;
             a.MatchedAt = clock.GetUtcNow();
         }
+        return matched;
     }
 
     private static RidePlace ToPlace(PlaceInput p) => new()

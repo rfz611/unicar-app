@@ -2,7 +2,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using UniCar.Api.Chat;
 using UniCar.Api.Common;
+using UniCar.Api.Realtime;
 using UniCar.Api.Data;
 using UniCar.Api.Domain;
 
@@ -12,7 +14,7 @@ namespace UniCar.Api.Rides;
 [ApiController]
 [Route("api/rides/{rideId:guid}")]
 [Authorize]
-public class ReservationsController(AppDbContext db, TimeProvider clock) : ControllerBase
+public class ReservationsController(AppDbContext db, ChatService chat, IRealtime realtime, TimeProvider clock) : ControllerBase
 {
     private const int MaxAttempts = 3;
     private Guid Me => User.UserId()!.Value;
@@ -106,8 +108,12 @@ public class ReservationsController(AppDbContext db, TimeProvider clock) : Contr
         };
         db.TimeSuggestions.Add(suggestion);
         await db.SaveChangesAsync(ct);
-        // TODO etapa 4: virar mensagem no chat e avisar o motorista pelo SignalR
-        return StatusCode(201, await DtoAsync(suggestion.Id, ct));
+
+        var dto = await DtoAsync(suggestion.Id, ct);
+        var when = req.Minutes < 0 ? "10 min antes" : "10 min depois";
+        await chat.SystemAsync(rideId, $"{dto.PassengerFirstName} sugeriu sair {when} ({dto.SuggestedDepartureTime}).", ct);
+        await realtime.TimeSuggestedAsync(ride.DriverId, dto);
+        return StatusCode(201, dto);
     }
 
     /// <summary>Motorista vê todas as sugestões da carona; passageiro, só as dele.</summary>
@@ -158,8 +164,20 @@ public class ReservationsController(AppDbContext db, TimeProvider clock) : Contr
         s.Status = accept ? SuggestionStatus.Accepted : SuggestionStatus.Declined;
         s.AnsweredAt = now;
         await db.SaveChangesAsync(ct);
-        // TODO etapa 4: avisar todos os passageiros do novo horário pelo SignalR
-        return Ok(await DtoAsync(s.Id, ct));
+
+        var dto = await DtoAsync(s.Id, ct);
+        if (accept)
+        {
+            var time = RideMapper.Time(s.Ride.DepartureAt);
+            await chat.SystemAsync(rideId, $"Horário alterado: a carona sai às {time}.", ct);
+            var passengers = await db.Reservations
+                .Where(r => r.RideId == rideId && r.Status == ReservationStatus.Confirmed).Select(r => r.PassengerId).ToListAsync(ct);
+            await realtime.RideUpdatedAsync(passengers, new RideUpdatedEvent(
+                rideId, s.Ride.Status.ToString(), s.Ride.DepartureAt, time, $"A carona agora sai às {time}."));
+        }
+        else
+            await chat.SystemAsync(rideId, $"O motorista manteve o horário ({RideMapper.Time(s.Ride.DepartureAt)}).", ct);
+        return Ok(dto);
     }
 
     private IQueryable<TimeSuggestion> Suggestions() => db.TimeSuggestions.Include(s => s.Passenger);

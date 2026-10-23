@@ -3,6 +3,8 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
@@ -63,6 +65,22 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
             await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.EnsureDeletedAsync();
         await DisposeAsync();
         if (Directory.Exists(_storageRoot)) Directory.Delete(_storageRoot, recursive: true);
+    }
+
+    /// <summary>Conecta no hub /hubs/trips com o token do cliente (long polling pelo TestServer).</summary>
+    public async Task<HubConnection> ConnectHubAsync(HttpClient client)
+    {
+        var token = client.DefaultRequestHeaders.Authorization!.Parameter;
+        var connection = new HubConnectionBuilder()
+            .WithUrl(new Uri(Server.BaseAddress, "/hubs/trips"), o =>
+            {
+                o.HttpMessageHandlerFactory = _ => Server.CreateHandler();
+                o.AccessTokenProvider = () => Task.FromResult(token);
+                o.Transports = HttpTransportType.LongPolling;
+            })
+            .Build();
+        await connection.StartAsync();
+        return connection;
     }
 
     /// <summary>Usuário já aprovado como motorista, com carro (atalho pelo banco; o fluxo real está em DriverTests).</summary>
@@ -152,6 +170,24 @@ public partial class FakeEmailSender : IEmailSender
 
     [GeneratedRegex(@"\d{6}")]
     private static partial Regex CodeRegex();
+}
+
+/// <summary>Espera um evento do SignalR (com tempo-limite, para o teste não travar).</summary>
+public static class HubEvents
+{
+    public static Task<T> Next<T>(HubConnection connection, string name, Func<T, bool>? match = null, int seconds = 10)
+    {
+        var tcs = new TaskCompletionSource<T>(TaskCreationOptions.RunContinuationsAsynchronously);
+        IDisposable? sub = null;
+        sub = connection.On<T>(name, e =>
+        {
+            if (match is not null && !match(e)) return;
+            if (tcs.TrySetResult(e)) sub?.Dispose();
+        });
+        _ = Task.Delay(TimeSpan.FromSeconds(seconds)).ContinueWith(_ =>
+            tcs.TrySetException(new TimeoutException($"Evento {name} não chegou em {seconds}s.")));
+        return tcs.Task;
+    }
 }
 
 /// <summary>Google de mentira: rota = linha reta × 1,3, a 30 km/h. Sem rede e sem custo.</summary>

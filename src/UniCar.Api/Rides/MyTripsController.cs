@@ -39,7 +39,21 @@ public class MyTripsController(AppDbContext db, TimeProvider clock) : Controller
             .Include(r => r.Reservations.Where(x => x.Status == ReservationStatus.Confirmed)).ThenInclude(x => x.Passenger)
             .ToListAsync(ct);
 
-        var items = asPassenger.Select(r => Passenger(r, now)).Concat(asDriver.Select(r => Driver(r, now))).ToList();
+        var rideIds = asPassenger.Select(r => r.RideId).Concat(asDriver.Select(r => r.Id)).ToList();
+        var tripByRide = await db.Trips.Where(t => t.RideId != null && rideIds.Contains(t.RideId.Value))
+            .ToDictionaryAsync(t => t.RideId!.Value, ct);
+
+        // "Pedir agora" (as corridas de carona marcada já aparecem pela carona)
+        var nowTrips = await db.Trips
+            .Where(t => t.RideId == null && (t.DriverId == me || t.Passengers.Any(p => p.PassengerId == me)))
+            .Include(t => t.Driver).Include(t => t.Vehicle)
+            .Include(t => t.Passengers).ThenInclude(p => p.Passenger)
+            .ToListAsync(ct);
+
+        var items = asPassenger.Select(r => Passenger(r, now, tripByRide.GetValueOrDefault(r.RideId)))
+            .Concat(asDriver.Select(r => Driver(r, now, tripByRide.GetValueOrDefault(r.Id))))
+            .Concat(nowTrips.Select(t => NowTrip(t, me)))
+            .ToList();
         var upcoming = items.Where(i => i.Upcoming).Select(i => i.Item).OrderBy(i => i.DepartureAt).ToList();
         var history = items.Where(i => !i.Upcoming).Select(i => i.Item).OrderByDescending(i => i.DepartureAt).Take(HistoryLimit).ToList();
         return Ok(new MyTripsDto(upcoming, history));
@@ -99,37 +113,56 @@ public class MyTripsController(AppDbContext db, TimeProvider clock) : Controller
         return NoContent();
     }
 
-    private static (bool Upcoming, TripItemDto Item) Passenger(Reservation r, DateTimeOffset now)
+    private static (bool Upcoming, TripItemDto Item) Passenger(Reservation r, DateTimeOffset now, Trip? trip)
     {
         var ride = r.Ride!;
         var active = r.Status == ReservationStatus.Confirmed && ride.Status == RideStatus.Scheduled;
         var status = ride.Status == RideStatus.Cancelled ? "RideCancelled" : r.Status.ToString();
         var item = new TripItemDto(
-            "Passenger", ride.Id, r.Id, status,
+            "Passenger", "Scheduled", ride.Id, trip?.Id, r.Id, status,
             ride.DepartureAt, RideMapper.Date(ride.DepartureAt), RideMapper.Time(ride.DepartureAt),
             RideMapper.ShortLabel(ride.Origin), RideMapper.ShortLabel(ride.Destination),
             r.Price, new[] { RideMapper.FirstName(ride.Driver!) },
             ride.SeatsTaken, ride.Seats, VehicleLabel(ride.Vehicle!),
-            active && RideRules.CanPassengerCancel(ride.DepartureAt, now));
-        return (active && !Finished(ride, now), item);
+            active && trip is null && RideRules.CanPassengerCancel(ride.DepartureAt, now));
+        return (active && !Finished(ride, now, trip), item);
     }
 
-    private static (bool Upcoming, TripItemDto Item) Driver(Ride ride, DateTimeOffset now)
+    private static (bool Upcoming, TripItemDto Item) Driver(Ride ride, DateTimeOffset now, Trip? trip)
     {
         var active = ride.Status == RideStatus.Scheduled;
         var passengers = ride.Reservations.OrderBy(x => x.CreatedAt).Select(x => RideMapper.FirstName(x.Passenger!)).ToList();
         var item = new TripItemDto(
-            "Driver", ride.Id, null, ride.Status.ToString(),
+            "Driver", "Scheduled", ride.Id, trip?.Id, null, ride.Status.ToString(),
             ride.DepartureAt, RideMapper.Date(ride.DepartureAt), RideMapper.Time(ride.DepartureAt),
             RideMapper.ShortLabel(ride.Origin), RideMapper.ShortLabel(ride.Destination),
             ride.DriverAmountPerSeat * ride.SeatsTaken, passengers,
             ride.SeatsTaken, ride.Seats, VehicleLabel(ride.Vehicle!),
-            active && ride.DepartureAt > now);
-        return (active && !Finished(ride, now), item);
+            active && trip is null && ride.DepartureAt > now);
+        return (active && !Finished(ride, now, trip), item);
     }
 
-    /// <summary>Considera a viagem feita quando passou a saída + duração da rota.</summary>
-    private static bool Finished(Ride ride, DateTimeOffset now) => ride.DepartureAt.AddMinutes(ride.Minutes) < now;
+    private static (bool Upcoming, TripItemDto Item) NowTrip(Trip t, Guid me)
+    {
+        var isDriver = t.DriverId == me;
+        var mine = t.Passengers.FirstOrDefault(p => p.PassengerId == me);
+        var with = isDriver
+            ? t.Passengers.Select(p => RideMapper.FirstName(p.Passenger!)).ToList()
+            : new List<string> { RideMapper.FirstName(t.Driver!) };
+        var amount = isDriver ? t.Passengers.Sum(p => p.DriverAmount) : mine?.Amount ?? 0;
+        var item = new TripItemDto(
+            isDriver ? "Driver" : "Passenger", "Now", null, t.Id, null, t.Status.ToString(),
+            t.CreatedAt, RideMapper.Date(t.CreatedAt), RideMapper.Time(t.CreatedAt),
+            RideMapper.ShortLabel(t.Origin), RideMapper.ShortLabel(t.Destination),
+            amount, with, t.Passengers.Count, t.Passengers.Count, VehicleLabel(t.Vehicle!), false);
+        return (t.IsActive, item);
+    }
+
+    /// <summary>
+    /// Feita: a corrida terminou (ou foi cancelada); sem corrida registrada, quando passou a saída + duração da rota.
+    /// </summary>
+    private static bool Finished(Ride ride, DateTimeOffset now, Trip? trip) =>
+        trip is not null ? !trip.IsActive : ride.DepartureAt.AddMinutes(ride.Minutes) < now;
 
     private static string VehicleLabel(Vehicle v) => $"{v.Model} {v.Color.ToLowerInvariant()} · {Plate.Display(v.Plate)}";
 }
