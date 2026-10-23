@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using UniCar.Api.Auth;
@@ -45,6 +46,8 @@ builder.Services.AddScoped<EmailCodeService>();
 builder.Services.AddSingleton<TokenService>();
 builder.Services.AddSingleton<PricingService>();
 builder.Services.AddHttpClient<IMapsClient, GoogleMapsClient>(c => c.Timeout = TimeSpan.FromSeconds(10));
+builder.Services.Configure<DemoOptions>(config.GetSection(DemoOptions.Section));
+builder.Services.AddScoped<DemoSeed>();
 
 // Login (JWT)
 var jwt = config.GetSection(JwtOptions.Section).Get<JwtOptions>() ?? new JwtOptions();
@@ -111,6 +114,10 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await db.Database.MigrateAsync();
     await SeedData.EnsureSeededAsync(db);
+
+    // Demonstração (só em Development, com Demo:Enabled): contas *.demo@, caronas, reservas
+    if (app.Environment.IsDevelopment() && scope.ServiceProvider.GetRequiredService<IOptions<DemoOptions>>().Value.Enabled)
+        await scope.ServiceProvider.GetRequiredService<DemoSeed>().EnsureAsync();
 }
 
 if (app.Environment.IsDevelopment())

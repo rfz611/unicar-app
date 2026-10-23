@@ -57,6 +57,26 @@ dotnet ef migrations add NomeDaMudanca --project src\UniCar.Api --output-dir Dat
 Os testes de integração criam um banco temporário `unicar_test_...` no mesmo PostgreSQL e apagam no fim
 (por isso o `CREATEDB`). Outro servidor: variável `UNICAR_TEST_PG`.
 
+### Demonstração (apresentação)
+
+Em Development (`Demo:Enabled = true` em `appsettings.Development.json`) a API cria, na primeira vez que sobe,
+universitários e caronas de exemplo. Todas as contas terminam em `.demo@...`:
+
+| Conta | Papel |
+|---|---|
+| `ana.demo@ufpr.br` | Passageira: casa no Água Verde, reserva amanhã 7h30 com o Bruno, 2 viagens no histórico, alerta "Me avise" |
+| `bruno.demo@ufpr.br` | Motorista (Onix prata): Batel → Politécnico hoje em ~2h e amanhã 7h30 |
+| `carla.demo@pucpr.edu.br` | Motorista (HB20 branco): Água Verde → PUCPR amanhã 7h45, com sugestão de +10 min do Felipe |
+| `diego.demo@utfpr.edu.br` | Motorista (Gol preto): carona lotada para a UTFPR |
+| `eduarda.demo@up.edu.br` | Pedido de motorista **em análise** |
+| `felipe.demo@utfpr.edu.br`, `gabriela.demo@up.edu.br` | Passageiros |
+| `admin.demo@ufpr.br` | Admin: aprova ou recusa motoristas |
+
+- **Antes de apresentar**, recrie com horários a partir de agora: `POST /api/dev/demo/reset`.
+- **Entrar sem código**: `POST /api/dev/login` com `{ "email": "ana.demo@ufpr.br" }` (só aceita contas `.demo@`).
+- Fora de Development, ou com `Demo:Enabled = false`, as rotas `/api/dev` respondem 404 e nada é criado.
+- Os preços das caronas de exemplo usam a rota estimada (sem chamar o Google), então funcionam sem chave.
+
 ### O código de verificação em desenvolvimento
 
 Sem SMTP configurado, a API **não envia e-mail**: o código aparece no terminal onde a API está rodando,

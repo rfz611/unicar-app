@@ -1,5 +1,24 @@
 @api = http://localhost:5080
 
+### 0. DEMONSTRAÇÃO (só em Development): recria as contas *.demo@ com horários a partir de agora
+POST {{api}}/api/dev/demo/reset
+
+### Contas da demonstração
+GET {{api}}/api/dev/demo
+
+### Entrar sem código por e-mail (copie o accessToken para @token abaixo)
+POST {{api}}/api/dev/login
+Content-Type: application/json
+
+{ "email": "ana.demo@ufpr.br" }
+
+### Outras: bruno.demo@ufpr.br (motorista), carla.demo@pucpr.edu.br (motorista, tem sugestão de horário),
+### eduarda.demo@up.edu.br (em análise), admin.demo@ufpr.br (admin)
+POST {{api}}/api/dev/login
+Content-Type: application/json
+
+{ "email": "admin.demo@ufpr.br" }
+
 ### 1. Pedir código (olhe o console da API para ver o código)
 POST {{api}}/api/auth/request-code
 Content-Type: application/json

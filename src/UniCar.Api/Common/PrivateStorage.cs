@@ -66,10 +66,26 @@ public class PrivateStorage(IOptions<StorageOptions> opt, IWebHostEnvironment en
         return name;
     }
 
+    /// <summary>Grava bytes prontos (usado pelo seed de demonstração).</summary>
+    public async Task<string> SaveBytesAsync(Guid userId, string prefix, string extension, byte[] bytes, CancellationToken ct)
+    {
+        var dir = Path.Combine(_root, userId.ToString());
+        Directory.CreateDirectory(dir);
+        var name = $"{prefix}-{Guid.NewGuid():N}"[..(prefix.Length + 9)] + extension;
+        await File.WriteAllBytesAsync(Path.Combine(dir, name), bytes, ct);
+        return name;
+    }
+
     public Stream? Open(Guid userId, string name)
     {
         var path = Path.Combine(_root, userId.ToString(), Path.GetFileName(name));
         return File.Exists(path) ? File.OpenRead(path) : null;
+    }
+
+    public void DeleteUserFolder(Guid userId)
+    {
+        var dir = Path.Combine(_root, userId.ToString());
+        if (Directory.Exists(dir)) Directory.Delete(dir, recursive: true);
     }
 
     public void Delete(Guid userId, string name)

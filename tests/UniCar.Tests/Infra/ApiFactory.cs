@@ -32,6 +32,9 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
     public FakeEmailSender Emails { get; } = new();
 
+    /// <summary>Seed de demonstração desligado nos testes comuns (cada teste cria o que precisa).</summary>
+    protected virtual bool DemoEnabled => false;
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Development");
@@ -44,6 +47,7 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
             s.Configure<StorageOptions>(o => o.PrivateRoot = _storageRoot);
             s.RemoveAll<IMapsClient>();
             s.AddSingleton<IMapsClient, FakeMapsClient>();
+            s.Configure<DemoOptions>(o => o.Enabled = DemoEnabled);
         });
     }
 
@@ -119,6 +123,18 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 public class ApiCollection : ICollectionFixture<ApiFactory>
 {
     public const string Name = "api";
+}
+
+/// <summary>API com o seed de demonstração ligado (banco próprio).</summary>
+public class DemoApiFactory : ApiFactory
+{
+    protected override bool DemoEnabled => true;
+}
+
+[CollectionDefinition(Name)]
+public class DemoCollection : ICollectionFixture<DemoApiFactory>
+{
+    public const string Name = "demo";
 }
 
 /// <summary>Guarda o último código mandado para cada e-mail em vez de enviar.</summary>
