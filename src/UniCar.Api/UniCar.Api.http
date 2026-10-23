@@ -132,6 +132,89 @@ Content-Type: application/json
 
 { "reason": "Foto da CNH ilegível. Mande outra com boa luz." }
 
+### 7. Oferecer: quanto o motorista recebe por passageiro (precisa da chave do Google)
+POST {{api}}/api/rides/estimate
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "origin": { "address": "R. Bispo Dom José, 2000 - Batel", "neighborhood": "Batel", "latitude": -25.4420, "longitude": -49.2890 },
+  "destination": { "address": "Av. Cel. Francisco H. dos Santos, 100 - Jardim das Américas", "neighborhood": "Jardim das Américas", "latitude": -25.4507, "longitude": -49.2316 }
+}
+
+### Publicar carona marcada (só motorista aprovado). date/time no horário de Curitiba; 1 a 4 vagas.
+POST {{api}}/api/rides
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "origin": { "address": "R. Bispo Dom José, 2000 - Batel", "neighborhood": "Batel", "latitude": -25.4420, "longitude": -49.2890 },
+  "destination": { "address": "Av. Cel. Francisco H. dos Santos, 100 - Jardim das Américas", "neighborhood": "Jardim das Américas", "latitude": -25.4507, "longitude": -49.2316 },
+  "date": "2026-10-26",
+  "time": "07:30",
+  "seats": 3
+}
+
+### 8. Buscar caronas marcadas para o destino (até 2 km). Com a origem, calcula "passa por você".
+GET {{api}}/api/rides/search?destLat=-25.4507&destLng=-49.2316&originLat=-25.4560&originLng=-49.2810&date=2026-10-26
+Authorization: Bearer {{token}}
+
+### Detalhe da carona
+@rideId = cole-o-id
+GET {{api}}/api/rides/{{rideId}}
+Authorization: Bearer {{token}}
+
+### Reservar lugar
+POST {{api}}/api/rides/{{rideId}}/reservations
+Authorization: Bearer {{token}}
+
+### Cancelar minha reserva (até 30 min antes)
+DELETE {{api}}/api/rides/{{rideId}}/reservations/mine
+Authorization: Bearer {{token}}
+
+### Sugerir 10 min antes (-10) ou depois (10)
+POST {{api}}/api/rides/{{rideId}}/time-suggestions
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "minutes": 10 }
+
+### Sugestões da carona (motorista vê todas)
+GET {{api}}/api/rides/{{rideId}}/time-suggestions
+Authorization: Bearer {{token}}
+
+### Motorista aceita a sugestão (muda o horário)
+@suggestionId = cole-o-id
+POST {{api}}/api/rides/{{rideId}}/time-suggestions/{{suggestionId}}/accept
+Authorization: Bearer {{token}}
+
+### Passageiros da carona que ofereci
+GET {{api}}/api/rides/{{rideId}}/passengers
+Authorization: Bearer {{token}}
+
+### Motorista cancela a carona (cancela as reservas junto)
+DELETE {{api}}/api/rides/{{rideId}}
+Authorization: Bearer {{token}}
+
+### 9. Aba Viagens: { upcoming, history }
+GET {{api}}/api/me/trips
+Authorization: Bearer {{token}}
+
+### Recentes (últimos 5 destinos)
+GET {{api}}/api/me/places/recent
+Authorization: Bearer {{token}}
+
+### "Ninguém indo para lá" → Me avise
+POST {{api}}/api/route-alerts
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "label": "UFPR Politécnico", "latitude": -25.4507, "longitude": -49.2316, "radiusKm": 2 }
+
+###
+GET {{api}}/api/route-alerts
+Authorization: Bearer {{token}}
+
 ### 5. Buscar endereço (precisa da chave do Google)
 GET {{api}}/api/places/autocomplete?q=hospital%20cajuru&session=11111111-1111-1111-1111-111111111111
 Authorization: Bearer {{token}}

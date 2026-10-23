@@ -12,6 +12,7 @@ using UniCar.Api.Auth;
 using UniCar.Api.Common;
 using UniCar.Api.Data;
 using UniCar.Api.Domain;
+using UniCar.Api.Places;
 using UniCar.Api.Users;
 using Xunit;
 
@@ -41,6 +42,8 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
             s.RemoveAll<IEmailSender>();
             s.AddSingleton<IEmailSender>(Emails);
             s.Configure<StorageOptions>(o => o.PrivateRoot = _storageRoot);
+            s.RemoveAll<IMapsClient>();
+            s.AddSingleton<IMapsClient, FakeMapsClient>();
         });
     }
 
@@ -56,6 +59,19 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
             await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.EnsureDeletedAsync();
         await DisposeAsync();
         if (Directory.Exists(_storageRoot)) Directory.Delete(_storageRoot, recursive: true);
+    }
+
+    /// <summary>Usuário já aprovado como motorista, com carro (atalho pelo banco; o fluxo real está em DriverTests).</summary>
+    public async Task<(HttpClient Client, UserDto User)> NewDriverAsync(string fullName = "Bruno Lima")
+    {
+        var (client, user) = await NewUserAsync(fullName: fullName);
+        await WithDbAsync(async db =>
+        {
+            (await db.Users.SingleAsync(u => u.Id == user.Id)).DriverStatus = DriverStatus.Approved;
+            db.Vehicles.Add(new Vehicle { UserId = user.Id, Plate = TestDriver.Plate(), Model = "Onix 1.0", Color = "Prata" });
+            await db.SaveChangesAsync();
+        });
+        return (client, user);
     }
 
     /// <summary>Dá Role = Admin direto no banco (não existe rota para isso).</summary>
@@ -120,6 +136,25 @@ public partial class FakeEmailSender : IEmailSender
 
     [GeneratedRegex(@"\d{6}")]
     private static partial Regex CodeRegex();
+}
+
+/// <summary>Google de mentira: rota = linha reta × 1,3, a 30 km/h. Sem rede e sem custo.</summary>
+public class FakeMapsClient : IMapsClient
+{
+    public Task<RouteInfo?> ComputeRouteAsync(LatLng origin, LatLng destination, CancellationToken ct = default)
+    {
+        var km = Geo.Km(origin, destination) * 1.3;
+        return Task.FromResult<RouteInfo?>(new RouteInfo((int)(km * 1000), (int)(km / 30 * 3600), "fake_polyline"));
+    }
+
+    public Task<IReadOnlyList<PlaceSuggestion>> AutocompleteAsync(string input, string sessionToken, LatLng? near, CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyList<PlaceSuggestion>>(Array.Empty<PlaceSuggestion>());
+
+    public Task<PlaceDetails?> GetPlaceAsync(string placeId, string? sessionToken, CancellationToken ct = default) =>
+        Task.FromResult<PlaceDetails?>(null);
+
+    public Task<PlaceDetails?> ReverseGeocodeAsync(LatLng point, CancellationToken ct = default) =>
+        Task.FromResult<PlaceDetails?>(null);
 }
 
 /// <summary>CNHs e placas válidas e diferentes para cada teste.</summary>

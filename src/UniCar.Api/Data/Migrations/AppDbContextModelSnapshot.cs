@@ -161,6 +161,149 @@ namespace UniCar.Api.Data.Migrations
                     b.ToTable("EmailVerificationCodes");
                 });
 
+            modelBuilder.Entity("UniCar.Api.Domain.Reservation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("CancelledAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("PassengerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<Guid>("RideId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(12)
+                        .HasColumnType("character varying(12)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PassengerId");
+
+                    b.HasIndex("RideId", "PassengerId")
+                        .IsUnique()
+                        .HasFilter("\"Status\" = 'Confirmed'");
+
+                    b.ToTable("Reservations");
+                });
+
+            modelBuilder.Entity("UniCar.Api.Domain.Ride", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("CancelledAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("DepartureAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("DriverAmountPerSeat")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<Guid>("DriverId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("EncodedPolyline")
+                        .HasColumnType("text");
+
+                    b.Property<double>("Km")
+                        .HasColumnType("double precision");
+
+                    b.Property<int>("Minutes")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("PricePerSeat")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<int>("Seats")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SeatsTaken")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(12)
+                        .HasColumnType("character varying(12)");
+
+                    b.Property<int>("VehicleId")
+                        .HasColumnType("integer");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DriverId");
+
+                    b.HasIndex("VehicleId");
+
+                    b.HasIndex("Status", "DepartureAt");
+
+                    b.ToTable("Rides");
+                });
+
+            modelBuilder.Entity("UniCar.Api.Domain.RouteAlert", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<double>("Latitude")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("Longitude")
+                        .HasColumnType("double precision");
+
+                    b.Property<DateTimeOffset?>("MatchedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("MatchedRideId")
+                        .HasColumnType("uuid");
+
+                    b.Property<double>("RadiusKm")
+                        .HasColumnType("double precision");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RouteAlerts");
+                });
+
             modelBuilder.Entity("UniCar.Api.Domain.SavedPlace", b =>
                 {
                     b.Property<int>("Id")
@@ -208,6 +351,44 @@ namespace UniCar.Api.Data.Migrations
                         .HasFilter("\"Kind\" = 'Home'");
 
                     b.ToTable("SavedPlaces");
+                });
+
+            modelBuilder.Entity("UniCar.Api.Domain.TimeSuggestion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("AnsweredAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("DepartureAtWhenSuggested")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Minutes")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("PassengerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("RideId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(12)
+                        .HasColumnType("character varying(12)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PassengerId");
+
+                    b.HasIndex("RideId");
+
+                    b.ToTable("TimeSuggestions");
                 });
 
             modelBuilder.Entity("UniCar.Api.Domain.University", b =>
@@ -442,6 +623,115 @@ namespace UniCar.Api.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("UniCar.Api.Domain.Reservation", b =>
+                {
+                    b.HasOne("UniCar.Api.Domain.User", "Passenger")
+                        .WithMany()
+                        .HasForeignKey("PassengerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("UniCar.Api.Domain.Ride", "Ride")
+                        .WithMany("Reservations")
+                        .HasForeignKey("RideId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Passenger");
+
+                    b.Navigation("Ride");
+                });
+
+            modelBuilder.Entity("UniCar.Api.Domain.Ride", b =>
+                {
+                    b.HasOne("UniCar.Api.Domain.User", "Driver")
+                        .WithMany()
+                        .HasForeignKey("DriverId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("UniCar.Api.Domain.Vehicle", "Vehicle")
+                        .WithMany()
+                        .HasForeignKey("VehicleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.OwnsOne("UniCar.Api.Domain.RidePlace", "Destination", b1 =>
+                        {
+                            b1.Property<Guid>("RideId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("Address")
+                                .IsRequired()
+                                .HasMaxLength(300)
+                                .HasColumnType("character varying(300)");
+
+                            b1.Property<double>("Latitude")
+                                .HasColumnType("double precision");
+
+                            b1.Property<double>("Longitude")
+                                .HasColumnType("double precision");
+
+                            b1.Property<string>("Neighborhood")
+                                .HasMaxLength(120)
+                                .HasColumnType("character varying(120)");
+
+                            b1.HasKey("RideId");
+
+                            b1.ToTable("Rides");
+
+                            b1.WithOwner()
+                                .HasForeignKey("RideId");
+                        });
+
+                    b.OwnsOne("UniCar.Api.Domain.RidePlace", "Origin", b1 =>
+                        {
+                            b1.Property<Guid>("RideId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("Address")
+                                .IsRequired()
+                                .HasMaxLength(300)
+                                .HasColumnType("character varying(300)");
+
+                            b1.Property<double>("Latitude")
+                                .HasColumnType("double precision");
+
+                            b1.Property<double>("Longitude")
+                                .HasColumnType("double precision");
+
+                            b1.Property<string>("Neighborhood")
+                                .HasMaxLength(120)
+                                .HasColumnType("character varying(120)");
+
+                            b1.HasKey("RideId");
+
+                            b1.ToTable("Rides");
+
+                            b1.WithOwner()
+                                .HasForeignKey("RideId");
+                        });
+
+                    b.Navigation("Destination")
+                        .IsRequired();
+
+                    b.Navigation("Driver");
+
+                    b.Navigation("Origin")
+                        .IsRequired();
+
+                    b.Navigation("Vehicle");
+                });
+
+            modelBuilder.Entity("UniCar.Api.Domain.RouteAlert", b =>
+                {
+                    b.HasOne("UniCar.Api.Domain.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("UniCar.Api.Domain.SavedPlace", b =>
                 {
                     b.HasOne("UniCar.Api.Domain.User", null)
@@ -449,6 +739,25 @@ namespace UniCar.Api.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCar.Api.Domain.TimeSuggestion", b =>
+                {
+                    b.HasOne("UniCar.Api.Domain.User", "Passenger")
+                        .WithMany()
+                        .HasForeignKey("PassengerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("UniCar.Api.Domain.Ride", "Ride")
+                        .WithMany()
+                        .HasForeignKey("RideId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Passenger");
+
+                    b.Navigation("Ride");
                 });
 
             modelBuilder.Entity("UniCar.Api.Domain.UniversityDomain", b =>
@@ -494,6 +803,11 @@ namespace UniCar.Api.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCar.Api.Domain.Ride", b =>
+                {
+                    b.Navigation("Reservations");
                 });
 
             modelBuilder.Entity("UniCar.Api.Domain.University", b =>

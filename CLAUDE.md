@@ -19,6 +19,7 @@ O backend faz o trabalho pesado (rota, preço, validação, tempo real); o app s
 - Banco com **migrations** (`src/UniCar.Api/Data/Migrations`), aplicadas ao subir a API. Nova: `dotnet ef migrations add Nome --project src/UniCar.Api --output-dir Data/Migrations`.
 - Testes de integração (`tests/UniCar.Tests`) sobem a API com um banco PostgreSQL temporário (`ApiFactory`); precisam do PostgreSQL local rodando.
 - Etapas da especificação feitas: 1 (migrations, campus, preferências, casa) e 2 (`Driver/`: pedido de motorista, fotos em `App_Data/private` fora do Git e do wwwroot, painel admin com política `Admin` conferida no banco).
+- Etapa 3 (`Rides/`): caronas marcadas, busca, reservas (última vaga protegida por `xmin`), sugestão de horário, Viagens, recentes, alertas "Me avise". Pendências para a etapa 4 marcadas com `TODO etapa 4` (chat e avisos via SignalR). Sem chave do Google, "passa por você" usa estimativa (`Geo.EstimateRoute`, `pickup.estimated = true`); publicar carona exige a chave (503).
 - Docker não roda neste PC (WSL2/Plataforma de Máquina Virtual desligada); usando PostgreSQL 16 instalado no Windows.
 
 ## O que falta: siga `docs/ESPECIFICACAO.md`

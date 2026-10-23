@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using UniCar.Api.Domain;
 
 namespace UniCar.Api.Data;
@@ -14,6 +15,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<EmailVerificationCode> EmailVerificationCodes => Set<EmailVerificationCode>();
     public DbSet<DriverApplication> DriverApplications => Set<DriverApplication>();
     public DbSet<Vehicle> Vehicles => Set<Vehicle>();
+    public DbSet<Ride> Rides => Set<Ride>();
+    public DbSet<Reservation> Reservations => Set<Reservation>();
+    public DbSet<TimeSuggestion> TimeSuggestions => Set<TimeSuggestion>();
+    public DbSet<RouteAlert> RouteAlerts => Set<RouteAlert>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -91,10 +96,51 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.HasIndex(x => x.UserId);
             e.HasOne<User>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
         });
+        b.Entity<Ride>(e =>
+        {
+            e.HasOne(x => x.Driver).WithMany().HasForeignKey(x => x.DriverId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Vehicle).WithMany().HasForeignKey(x => x.VehicleId).OnDelete(DeleteBehavior.Restrict);
+            e.OwnsOne(x => x.Origin, ConfigurePlace);
+            e.OwnsOne(x => x.Destination, ConfigurePlace);
+            e.Property(x => x.Status).HasConversion<string>().HasMaxLength(12);
+            e.Property(x => x.PricePerSeat).HasPrecision(10, 2);
+            e.Property(x => x.DriverAmountPerSeat).HasPrecision(10, 2);
+            e.HasIndex(x => new { x.Status, x.DepartureAt });
+            e.HasIndex(x => x.DriverId);
+            e.Ignore(x => x.SeatsLeft);
+        });
+        b.Entity<Reservation>(e =>
+        {
+            e.HasOne(x => x.Ride).WithMany(x => x.Reservations).HasForeignKey(x => x.RideId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Passenger).WithMany().HasForeignKey(x => x.PassengerId).OnDelete(DeleteBehavior.Cascade);
+            e.Property(x => x.Status).HasConversion<string>().HasMaxLength(12);
+            e.Property(x => x.Price).HasPrecision(10, 2);
+            // Uma reserva ativa por pessoa por carona, garantido pelo banco mesmo com dois cliques ao mesmo tempo.
+            e.HasIndex(x => new { x.RideId, x.PassengerId }).HasFilter("\"Status\" = 'Confirmed'").IsUnique();
+            e.HasIndex(x => x.PassengerId);
+        });
+        b.Entity<TimeSuggestion>(e =>
+        {
+            e.HasOne(x => x.Ride).WithMany().HasForeignKey(x => x.RideId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Passenger).WithMany().HasForeignKey(x => x.PassengerId).OnDelete(DeleteBehavior.Cascade);
+            e.Property(x => x.Status).HasConversion<string>().HasMaxLength(12);
+        });
+        b.Entity<RouteAlert>(e =>
+        {
+            e.HasOne<User>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+            e.Property(x => x.Label).HasMaxLength(300);
+            e.HasIndex(x => x.UserId);
+        });
         b.Entity<EmailVerificationCode>(e =>
         {
             e.Property(x => x.Email).HasMaxLength(254);
             e.HasIndex(x => new { x.Email, x.CreatedAt });
         });
+    }
+
+    private static void ConfigurePlace<T>(OwnedNavigationBuilder<T, RidePlace> p) where T : class
+    {
+        p.Property(x => x.Address).HasMaxLength(300);
+        p.Property(x => x.Neighborhood).HasMaxLength(120);
     }
 }
