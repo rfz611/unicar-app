@@ -42,12 +42,17 @@ public record UserDto(
         u.TrustedContactPhone, u.DriverStatus.ToString(), u.EmailVerifiedAt);
 }
 
-/// <summary>O que outros universitários veem: sem CPF, celular, e-mail ou data de nascimento. Curso só se a pessoa permitir.</summary>
-public record PublicUserDto(Guid Id, string FirstName, string University, string? Course, int Period, string? Bio, string? PhotoUrl)
+/// <summary>
+/// O que outros universitários veem: sem CPF, celular, e-mail ou data de nascimento. Curso só se a pessoa permitir.
+/// <see cref="Rating"/> é a média das notas recebidas (null sem avaliações).
+/// </summary>
+public record PublicUserDto(Guid Id, string FirstName, string University, string? Course, int Period, string? Bio, string? PhotoUrl,
+    bool IsDriver, double? Rating, int RatingsCount, int TripsCount)
 {
-    public static PublicUserDto From(User u) => new(
+    public static PublicUserDto From(User u, UserStats stats) => new(
         u.Id, u.FullName.Split(' ')[0], u.University?.ShortName ?? string.Empty,
-        u.Preferences?.ShowCourse == false ? null : u.Course, u.Period, u.Bio, u.PhotoUrl);
+        u.Preferences?.ShowCourse == false ? null : u.Course, u.Period, u.Bio, u.PhotoUrl,
+        u.DriverStatus == DriverStatus.Approved, stats.Rating, stats.RatingsCount, stats.TripsCount);
 }
 
 public record UpdateMeRequest(

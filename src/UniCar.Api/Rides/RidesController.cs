@@ -9,6 +9,7 @@ using UniCar.Api.Domain;
 using UniCar.Api.Places;
 using UniCar.Api.Pricing;
 using UniCar.Api.Realtime;
+using UniCar.Api.Users;
 
 namespace UniCar.Api.Rides;
 
@@ -18,7 +19,7 @@ namespace UniCar.Api.Rides;
 [Authorize]
 public class RidesController(
     AppDbContext db, RouteService routes, PricingService pricing, IOptions<GoogleMapsOptions> region, TimeProvider clock,
-    IRealtime realtime)
+    IRealtime realtime, UserStatsService stats)
     : ControllerBase
 {
     private Guid Me => User.UserId()!.Value;
@@ -63,10 +64,15 @@ public class RidesController(
         db.Rides.Add(ride);
         var matched = await MatchRouteAlertsAsync(ride, ct);
         await db.SaveChangesAsync(ct);
-        foreach (var alert in matched)
+        // "Avisos de carona" desligado: o alerta fica marcado (aparece na lista), só não chega o aviso
+        var silenced = await db.UserPreferences
+            .Where(p => matched.Select(a => a.UserId).Contains(p.UserId) && !p.RideAlerts)
+            .Select(p => p.UserId).ToListAsync(ct);
+        foreach (var alert in matched.Where(a => !silenced.Contains(a.UserId)))
             await realtime.RouteAlertMatchedAsync(alert.UserId, RouteAlertDto.From(alert));
 
-        return CreatedAtAction(nameof(Get), new { id = ride.Id }, RideMapper.ToDto(ride, Me, reservedByMe: false));
+        return CreatedAtAction(nameof(Get), new { id = ride.Id },
+            RideMapper.ToDto(ride, Me, reservedByMe: false, driverStats: await stats.ForAsync(Me, ct)));
     }
 
     [HttpGet("{id:guid}")]
@@ -76,7 +82,7 @@ public class RidesController(
         if (ride is null) return NotFound(new ApiError("ride_not_found", "Carona não encontrada."));
         var reserved = await db.Reservations.AnyAsync(
             r => r.RideId == id && r.PassengerId == Me && r.Status == ReservationStatus.Confirmed, ct);
-        return Ok(RideMapper.ToDto(ride, Me, reserved));
+        return Ok(RideMapper.ToDto(ride, Me, reserved, driverStats: await stats.ForAsync(ride.DriverId, ct)));
     }
 
     /// <summary>
@@ -127,7 +133,9 @@ public class RidesController(
             ? new PickupDto?[matches.Count]
             : await Task.WhenAll(matches.Select(m => PickupAsync(m.Ride, passenger, ct)));
 
-        return Ok(matches.Select((m, i) => RideMapper.ToDto(m.Ride, me, mine.Contains(m.Ride.Id), pickups[i], m.Km)));
+        var driverStats = await stats.ForAsync(matches.Select(m => m.Ride.DriverId), ct);
+        return Ok(matches.Select((m, i) =>
+            RideMapper.ToDto(m.Ride, me, mine.Contains(m.Ride.Id), pickups[i], m.Km, driverStats[m.Ride.DriverId])));
     }
 
     /// <summary>Motorista cancela a carona: todas as reservas são canceladas junto.</summary>

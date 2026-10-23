@@ -107,7 +107,7 @@ public class RideRequestsController(
 
         var loaded = (await trips.LoadAsync(trip.Id, ct))!;
         await trips.NotifyAsync(loaded);
-        return StatusCode(201, TripService.ToDto(loaded, Me));
+        return StatusCode(201, await trips.DtoAsync(loaded, Me, ct));
     }
 
     // ---------- Passageiro ----------

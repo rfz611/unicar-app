@@ -22,7 +22,8 @@ O backend faz o trabalho pesado (rota, preço, validação, tempo real); o app s
 - Etapa 3 (`Rides/`): caronas marcadas, busca, reservas (última vaga protegida por `xmin`), sugestão de horário, Viagens, recentes, alertas "Me avise". Pendências para a etapa 4 marcadas com `TODO etapa 4` (chat e avisos via SignalR). Sem chave do Google, "passa por você" usa estimativa (`Geo.EstimateRoute`, `pickup.estimated = true`); publicar carona exige a chave (503).
 - Etapa 6: `Data/DemoSeed.cs` (contas `*.demo@`, só em Development com `Demo:Enabled`), `POST /api/dev/demo/reset` e `POST /api/dev/login`.
 - Etapa 4: hub `/hubs/trips` (`Realtime/`), pedir agora e corridas (`Trips/`), chat (`Chat/`). Presença de motoristas em memória (`DriverPresence`). `RouteService`: sem chave do Google, estima a rota só se `GoogleMaps:EstimateWhenNotConfigured` (ligado em Development); em produção continua 503.
-- Falta a etapa 5 (média das avaliações no perfil público, foto de perfil). As notas já são gravadas em `Rating` ao pagar.
+- Etapa 5: notas (`UserStatsService`: média, avaliações, viagens) no perfil público `GET /api/users/{id}`, na busca e na corrida; `POST /api/trips/{id}/ratings`; foto de perfil com SkiaSharp (512×512 JPEG, sem EXIF) em `wwwroot/uploads` (fora do Git, `PublicStorage`); "Avisos de carona" desligado silencia o "Me avise".
+- Todas as etapas da especificação feitas. Pendências conhecidas: pagamento real (Pix/cartão), envio do link de trajeto ao contato de confiança, push notifications, storage de verdade para fotos.
 - Docker não roda neste PC (WSL2/Plataforma de Máquina Virtual desligada); usando PostgreSQL 16 instalado no Windows.
 
 ## O que falta: siga `docs/ESPECIFICACAO.md`

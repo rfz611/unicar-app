@@ -7,6 +7,8 @@ public class StorageOptions
     public const string Section = "Storage";
     /// <summary>Pasta dos documentos (CNH, selfie). Fica fora do wwwroot: só sai pela API, para admin. Vazio = App_Data/private.</summary>
     public string PrivateRoot { get; set; } = string.Empty;
+    /// <summary>Pasta das fotos de perfil (servidas em /uploads). Vazio = wwwroot/uploads.</summary>
+    public string PublicRoot { get; set; } = string.Empty;
 }
 
 /// <summary>Imagem enviada pelo app: confere tamanho e o tipo real pelos primeiros bytes (não confia na extensão).</summary>

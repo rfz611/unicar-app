@@ -317,6 +317,34 @@ Content-Type: application/json
 GET {{api}}/api/conversations/quick-replies
 Authorization: Bearer {{token}}
 
+### 12. PERFIL — foto (jpg/png/webp até 5 MB; vira JPEG 512×512). photoUrl é relativo: {{api}}/uploads/...
+POST {{api}}/api/users/me/photo
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=UniCar
+
+--UniCar
+Content-Disposition: form-data; name="file"; filename="foto.jpg"
+Content-Type: image/jpeg
+
+< ./foto.jpg
+--UniCar--
+
+###
+DELETE {{api}}/api/users/me/photo
+Authorization: Bearer {{token}}
+
+### Perfil público (nota média, avaliações, viagens; curso só se a pessoa permitir)
+@userId2 = cole-o-id
+GET {{api}}/api/users/{{userId2}}
+Authorization: Bearer {{token}}
+
+### Avaliar alguém da corrida (motorista → passageiro; passageiro → motorista se não avaliou ao pagar)
+POST {{api}}/api/trips/{{tripId}}/ratings
+Authorization: Bearer {{driverToken}}
+Content-Type: application/json
+
+{ "toUserId": "{{userId2}}", "stars": 5 }
+
 ### 5. Buscar endereço (precisa da chave do Google)
 GET {{api}}/api/places/autocomplete?q=hospital%20cajuru&session=11111111-1111-1111-1111-111111111111
 Authorization: Bearer {{token}}

@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
+using UniCar.Api.Users;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.SignalR;
@@ -37,6 +39,8 @@ builder.Services.AddDataProtection()
 builder.Services.AddSingleton<SensitiveData>();
 builder.Services.Configure<StorageOptions>(config.GetSection(StorageOptions.Section));
 builder.Services.AddSingleton<PrivateStorage>();
+builder.Services.AddSingleton<PublicStorage>();
+builder.Services.AddScoped<UserStatsService>();
 
 // E-mail: sem SMTP configurado, o código aparece no console da API
 var smtp = config.GetSection(SmtpOptions.Section).Get<SmtpOptions>() ?? new SmtpOptions();
@@ -151,6 +155,15 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors();
+
+// Fotos de perfil em /uploads (só os arquivos de PublicStorage; documentos de motorista ficam em PrivateStorage)
+var uploads = app.Services.GetRequiredService<PublicStorage>().Root;
+Directory.CreateDirectory(uploads);
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(uploads),
+    RequestPath = PublicStorage.RequestPath
+});
 
 // Sem chave do Google: busca e preço respondem 503 com mensagem clara, em vez de 500.
 app.Use(async (ctx, next) =>

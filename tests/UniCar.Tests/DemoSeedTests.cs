@@ -49,6 +49,9 @@ public class DemoSeedTests(DemoApiFactory api)
         Assert.True(rides!.Count >= 2);
         Assert.Contains(rides, r => r.ReservedByMe);
         Assert.All(rides, r => Assert.True(r.PricePerSeat >= 6m));
+        // motoristas da demonstração já têm nota
+        Assert.Equal(4.8, rides.First(r => r.Driver.FirstName == "Bruno").Driver.Rating);
+        Assert.All(rides, r => Assert.NotNull(r.Driver.Rating));
     }
 
     [Fact]

@@ -6,12 +6,17 @@ using UniCar.Api.Driver;
 using UniCar.Api.Places;
 using UniCar.Api.Realtime;
 using UniCar.Api.Rides;
+using UniCar.Api.Users;
 
 namespace UniCar.Api.Trips;
 
 /// <summary>Carregar, mostrar e avisar sobre corridas; usado pelos controllers e pelo hub.</summary>
-public class TripService(AppDbContext db, IRealtime realtime, DriverPresence presence, TimeProvider clock)
+public class TripService(AppDbContext db, IRealtime realtime, DriverPresence presence, UserStatsService stats, TimeProvider clock)
 {
+    /// <summary>TripDto com a nota do motorista (o que os controllers e eventos devolvem).</summary>
+    public async Task<TripDto> DtoAsync(Trip t, Guid viewerId, CancellationToken ct = default) =>
+        ToDto(t, viewerId, await stats.ForAsync(t.DriverId, ct));
+
     public Task<Trip?> LoadAsync(Guid id, CancellationToken ct = default) =>
         db.Trips
             .Include(t => t.Driver).ThenInclude(d => d!.University)
@@ -33,7 +38,7 @@ public class TripService(AppDbContext db, IRealtime realtime, DriverPresence pre
                                && (t.Status == TripStatus.Accepted || t.Status == TripStatus.DriverArrived
                                    || t.Status == TripStatus.InProgress), ct);
 
-    public static TripDto ToDto(Trip t, Guid viewerId)
+    public static TripDto ToDto(Trip t, Guid viewerId, UserStats? driverStats = null)
     {
         LocationDto? location = t.LastLatitude is null
             ? null
@@ -44,7 +49,7 @@ public class TripService(AppDbContext db, IRealtime realtime, DriverPresence pre
         return new TripDto(
             t.Id, t.Mode.ToString(), t.Status.ToString(), t.RideId, t.RideRequestId, ConversationId(t),
             RideMapper.Place(t.Origin, true), RideMapper.Place(t.Destination, true), t.Km, t.Minutes,
-            RideMapper.Driver(t.Driver!), VehicleDto.From(t.Vehicle!),
+            RideMapper.Driver(t.Driver!, driverStats), VehicleDto.From(t.Vehicle!),
             t.Passengers.Select(p => new TripPassengerDto(p.PassengerId, RideMapper.FirstName(p.Passenger!), p.Passenger!.PhotoUrl)).ToList(),
             location, eta, etaTo, t.CreatedAt, t.ArrivedAt, t.StartedAt, t.CompletedAt, t.CancelledAt,
             me is null ? null : new MyPaymentDto(me.Amount, me.PaymentMethod?.ToString(), me.PaymentStatus.ToString(), me.RatingGiven));
@@ -63,7 +68,7 @@ public class TripService(AppDbContext db, IRealtime realtime, DriverPresence pre
         };
     }
 
-    public Task NotifyAsync(Trip t) => realtime.TripUpdatedAsync(Participants(t), ToDto(t, Guid.Empty));
+    public async Task NotifyAsync(Trip t) => await realtime.TripUpdatedAsync(Participants(t), await DtoAsync(t, Guid.Empty));
 
     /// <summary>Hub UpdateLocation: só o motorista da corrida, só enquanto ela está ativa.</summary>
     public async Task<ApiError?> UpdateLocationAsync(Guid tripId, Guid driverId, double lat, double lng, CancellationToken ct)

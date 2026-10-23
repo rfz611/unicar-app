@@ -46,7 +46,11 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
             s.AddDbContext<AppDbContext>(o => o.UseNpgsql(_connectionString));
             s.RemoveAll<IEmailSender>();
             s.AddSingleton<IEmailSender>(Emails);
-            s.Configure<StorageOptions>(o => o.PrivateRoot = _storageRoot);
+            s.Configure<StorageOptions>(o =>
+            {
+                o.PrivateRoot = Path.Combine(_storageRoot, "private");
+                o.PublicRoot = Path.Combine(_storageRoot, "public");
+            });
             s.RemoveAll<IMapsClient>();
             s.AddSingleton<IMapsClient, FakeMapsClient>();
             s.Configure<DemoOptions>(o => o.Enabled = DemoEnabled);

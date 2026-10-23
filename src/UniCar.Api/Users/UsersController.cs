@@ -10,7 +10,8 @@ namespace UniCar.Api.Users;
 [ApiController]
 [Route("api")]
 [Authorize]
-public class UsersController(AppDbContext db, SensitiveData sensitive, TimeProvider clock) : ControllerBase
+public class UsersController(AppDbContext db, SensitiveData sensitive, TimeProvider clock, UserStatsService stats,
+    PublicStorage files) : ControllerBase
 {
     private static readonly string[] Genders = { "Mulher", "Homem", "Prefiro não dizer" };
 
@@ -64,6 +65,52 @@ public class UsersController(AppDbContext db, SensitiveData sensitive, TimeProvi
         await db.SaveChangesAsync(ct);
 
         return Ok(UserDto.From(user, cpf));
+    }
+
+    /// <summary>Perfil público de outro universitário (motorista da carona, passageiro): nota, viagens, curso se permitir.</summary>
+    [HttpGet("users/{id:guid}")]
+    public async Task<IActionResult> Public(Guid id, CancellationToken ct)
+    {
+        var user = await db.Users.Include(u => u.University).Include(u => u.Preferences).FirstOrDefaultAsync(u => u.Id == id, ct);
+        if (user is null) return NotFound(new ApiError("user_not_found", "Pessoa não encontrada."));
+        return Ok(PublicUserDto.From(user, await stats.ForAsync(id, ct)));
+    }
+
+    /// <summary>Trocar a foto: jpg/png/webp até 5 MB. Vira um JPEG 512×512 (cortado no centro, sem EXIF).</summary>
+    [HttpPost("users/me/photo")]
+    [RequestSizeLimit(ImageUpload.MaxBytes + 64 * 1024)]
+    public async Task<IActionResult> UploadPhoto(IFormFile? file, CancellationToken ct)
+    {
+        var error = ImageUpload.Check(file, out _);
+        if (error is not null) return BadRequest(error);
+
+        byte[] original;
+        using (var ms = new MemoryStream())
+        {
+            await file!.CopyToAsync(ms, ct);
+            original = ms.ToArray();
+        }
+        var jpeg = Avatar.Make(original);
+        if (jpeg is null) return BadRequest(new ApiError("invalid_image", "Não conseguimos abrir essa foto. Tente outra."));
+
+        var user = await LoadMeAsync(ct);
+        if (user is null) return NotFound();
+        var previous = user.PhotoUrl;
+        user.PhotoUrl = await files.SaveAsync("avatars", $"{user.Id:N}-{Guid.NewGuid():N}"[..41] + ".jpg", jpeg, ct);
+        await db.SaveChangesAsync(ct);
+        files.Delete(previous);
+        return Ok(UserDto.From(user, sensitive.Decrypt(user.CpfEncrypted)));
+    }
+
+    [HttpDelete("users/me/photo")]
+    public async Task<IActionResult> DeletePhoto(CancellationToken ct)
+    {
+        var user = await LoadMeAsync(ct);
+        if (user is null) return NotFound();
+        files.Delete(user.PhotoUrl);
+        user.PhotoUrl = null;
+        await db.SaveChangesAsync(ct);
+        return NoContent();
     }
 
     /// <summary>Escolhe o campus do atalho "Minha faculdade" (só campi da própria faculdade).</summary>

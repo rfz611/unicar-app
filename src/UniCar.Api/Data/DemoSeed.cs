@@ -200,11 +200,46 @@ public class DemoSeed(AppDbContext db, SensitiveData sensitive, PricingService p
         // Depois de amanhã: Batel → Positivo
         NewRide(bruno, onix, Batel, Positivo, LocalTime.ToUtc(tomorrow.AddDays(1), new TimeOnly(13, 0)), 2);
 
+        // Corrida já feita: Trip concluída, pagamento escolhido e as notas dos passageiros para o motorista
+        void Done(Ride ride, params (User Passenger, int Stars, PaymentMethod Method)[] passengers)
+        {
+            var trip = new Trip
+            {
+                Mode = TripMode.Scheduled, RideId = ride.Id, DriverId = ride.DriverId, VehicleId = ride.Vehicle!.Id, Vehicle = ride.Vehicle,
+                Origin = Copy(ride.Origin), Destination = Copy(ride.Destination), Km = ride.Km, Minutes = ride.Minutes,
+                Status = TripStatus.Completed, CreatedAt = ride.DepartureAt, ArrivedAt = ride.DepartureAt.AddMinutes(3),
+                StartedAt = ride.DepartureAt.AddMinutes(5), CompletedAt = ride.DepartureAt.AddMinutes(5 + ride.Minutes)
+            };
+            foreach (var (p, stars, method) in passengers)
+            {
+                Reserve(ride, p, ride.DepartureAt.AddDays(-1));
+                trip.Passengers.Add(new TripPassenger
+                {
+                    PassengerId = p.Id, Amount = ride.PricePerSeat, DriverAmount = ride.DriverAmountPerSeat,
+                    PaymentMethod = method, PaymentStatus = PaymentStatus.PendingPayment, RatingGiven = stars,
+                    CompletedAt = trip.CompletedAt
+                });
+                db.Ratings.Add(new Rating { TripId = trip.Id, FromUserId = p.Id, ToUserId = ride.DriverId, Stars = stars, CreatedAt = trip.CompletedAt!.Value });
+            }
+            db.Trips.Add(trip);
+        }
+
         // Histórico da Ana: duas viagens que já aconteceram
-        var past1 = NewRide(diego, gol, AguaVerde, Politecnico, LocalTime.ToUtc(today.AddDays(-2), new TimeOnly(7, 20)), 3);
-        Reserve(past1, ana, now.AddDays(-3));
-        var past2 = NewRide(carla, hb20, Pucpr, AguaVerde, LocalTime.ToUtc(today.AddDays(-5), new TimeOnly(18, 10)), 3);
-        Reserve(past2, ana, now.AddDays(-6));
+        Done(NewRide(diego, gol, AguaVerde, Politecnico, LocalTime.ToUtc(today.AddDays(-2), new TimeOnly(7, 20)), 3),
+            (ana, 5, PaymentMethod.Pix));
+        Done(NewRide(carla, hb20, Pucpr, AguaVerde, LocalTime.ToUtc(today.AddDays(-5), new TimeOnly(18, 10)), 3),
+            (ana, 4, PaymentMethod.Card));
+        // Mais histórico para os motoristas terem nota (Bruno 4,8 · Carla 4,7 · Diego 4,5)
+        Done(NewRide(bruno, onix, Batel, Politecnico, LocalTime.ToUtc(today.AddDays(-1), new TimeOnly(7, 30)), 3),
+            (felipe, 5, PaymentMethod.Pix), (gabriela, 5, PaymentMethod.Pix));
+        Done(NewRide(bruno, onix, Batel, Politecnico, LocalTime.ToUtc(today.AddDays(-3), new TimeOnly(7, 30)), 3),
+            (felipe, 5, PaymentMethod.Card), (gabriela, 5, PaymentMethod.Pix));
+        Done(NewRide(bruno, onix, Politecnico, Batel, LocalTime.ToUtc(today.AddDays(-3), new TimeOnly(17, 40)), 3),
+            (felipe, 4, PaymentMethod.Pix));
+        Done(NewRide(carla, hb20, AguaVerde, Pucpr, LocalTime.ToUtc(today.AddDays(-4), new TimeOnly(7, 45)), 4),
+            (felipe, 5, PaymentMethod.Pix), (gabriela, 5, PaymentMethod.Card));
+        Done(NewRide(diego, gol, Portao, Utfpr, LocalTime.ToUtc(today.AddDays(-6), new TimeOnly(18, 0)), 2),
+            (felipe, 4, PaymentMethod.Pix));
 
         // "Me avise" da Ana para o Positivo (casa com a carona de depois de amanhã)
         db.RouteAlerts.Add(new RouteAlert

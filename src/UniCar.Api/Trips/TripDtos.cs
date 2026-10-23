@@ -28,6 +28,8 @@ public record TripStatusRequest(string Status);
 /// <summary>Tela "Você chegou": Pix ou Card, nota de 1 a 5 para o motorista.</summary>
 public record CompleteTripRequest(string PaymentMethod, int? Rating);
 
+public record RateRequest(Guid ToUserId, int Stars);
+
 public record LocationDto(double Latitude, double Longitude, DateTimeOffset At);
 
 public record TripPassengerDto(Guid UserId, string FirstName, string? PhotoUrl);

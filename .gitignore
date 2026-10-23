@@ -6,3 +6,4 @@ obj/
 keys/
 appsettings.Local.json
 App_Data/
+**/wwwroot/uploads/

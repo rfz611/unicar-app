@@ -29,7 +29,7 @@ public class TripsController(AppDbContext db, TripService trips, ChatService cha
     {
         var trip = await trips.LoadAsync(id, ct);
         if (trip is null || !TripService.IsParticipant(trip, Me)) return NotFound(new ApiError("trip_not_found", "Corrida não encontrada."));
-        return Ok(TripService.ToDto(trip, Me));
+        return Ok(await trips.DtoAsync(trip, Me, ct));
     }
 
     /// <summary>
@@ -77,7 +77,7 @@ public class TripsController(AppDbContext db, TripService trips, ChatService cha
         };
         if (notice is not null) await chat.SystemAsync(TripService.ConversationId(trip), notice, ct);
         await trips.NotifyAsync(trip);
-        return Ok(TripService.ToDto(trip, Me));
+        return Ok(await trips.DtoAsync(trip, Me, ct));
     }
 
     /// <summary>
@@ -116,6 +116,33 @@ public class TripsController(AppDbContext db, TripService trips, ChatService cha
 
         await trips.NotifyAsync(trip);
         return Ok(new MyPaymentDto(mine.Amount, method.ToString(), mine.PaymentStatus.ToString(), mine.RatingGiven));
+    }
+
+    /// <summary>
+    /// Avaliar alguém da corrida depois que ela terminou: motorista avalia passageiro, passageiro avalia motorista
+    /// (se não deu nota ao pagar). Uma nota por pessoa por corrida.
+    /// </summary>
+    [HttpPost("trips/{id:guid}/ratings")]
+    public async Task<IActionResult> Rate(Guid id, RateRequest req, CancellationToken ct)
+    {
+        var trip = await trips.LoadAsync(id, ct);
+        if (trip is null || !TripService.IsParticipant(trip, Me)) return NotFound(new ApiError("trip_not_found", "Corrida não encontrada."));
+        if (trip.Status != TripStatus.Completed) return Conflict(new ApiError("trip_not_finished", "A corrida ainda não terminou."));
+        if (req.Stars is < 1 or > 5) return BadRequest(new ApiError("invalid_rating", "A nota vai de 1 a 5."));
+
+        var iAmDriver = trip.DriverId == Me;
+        var validTarget = iAmDriver
+            ? trip.Passengers.Any(p => p.PassengerId == req.ToUserId)
+            : req.ToUserId == trip.DriverId;
+        if (!validTarget) return BadRequest(new ApiError("invalid_target", "Avalie o motorista ou um passageiro dessa corrida."));
+        if (await db.Ratings.AnyAsync(r => r.TripId == id && r.FromUserId == Me && r.ToUserId == req.ToUserId, ct))
+            return Conflict(new ApiError("already_rated", "Você já avaliou essa pessoa nessa corrida."));
+
+        db.Ratings.Add(new Rating { TripId = id, FromUserId = Me, ToUserId = req.ToUserId, Stars = req.Stars, CreatedAt = clock.GetUtcNow() });
+        var mine = trip.Passengers.FirstOrDefault(p => p.PassengerId == Me);
+        if (mine is not null) mine.RatingGiven = req.Stars;
+        await db.SaveChangesAsync(ct);
+        return NoContent();
     }
 
     /// <summary>"Compartilhar trajeto": link público por 4 h (ou até a corrida acabar), só com posição e destino.</summary>
@@ -184,7 +211,7 @@ public class TripsController(AppDbContext db, TripService trips, ChatService cha
         var loaded = (await trips.LoadAsync(trip.Id, ct))!;
         await trips.NotifyAsync(loaded);
         await chat.SystemAsync(ride.Id, $"{RideMapper.FirstName(loaded.Driver!)} saiu. Acompanhe pelo mapa.", ct);
-        return StatusCode(201, TripService.ToDto(loaded, Me));
+        return StatusCode(201, await trips.DtoAsync(loaded, Me, ct));
     }
 
     private static string Hash(string token) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));

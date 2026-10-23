@@ -100,6 +100,12 @@ Eventos: `RideRequested`, `RideRequestClosed`, `TripUpdated`, `DriverLocation`, 
 **Sem chave do Google em Development**, preço e rota usam estimativa (`estimated: true` nas respostas) para a
 demonstração funcionar. Em produção (`GoogleMaps:EstimateWhenNotConfigured` desligado) continua 503.
 
+### Fotos
+
+- **Perfil**: `POST /api/users/me/photo` → JPEG 512×512 (corte no centro, sem metadados/GPS), servido em `/uploads/avatars/...`.
+  Em desenvolvimento fica em `src/UniCar.Api/wwwroot/uploads` (fora do Git). Em produção, trocar `PublicStorage` por um storage.
+- **Documentos do motorista** (CNH, selfie) ficam em `App_Data/private`, nunca em `/uploads`: só o admin vê, pela API.
+
 ### O código de verificação em desenvolvimento
 
 Sem SMTP configurado, a API **não envia e-mail**: o código aparece no terminal onde a API está rodando,

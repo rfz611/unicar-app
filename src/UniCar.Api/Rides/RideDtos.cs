@@ -1,6 +1,7 @@
 using UniCar.Api.Common;
 using UniCar.Api.Domain;
 using UniCar.Api.Driver;
+using UniCar.Api.Users;
 
 namespace UniCar.Api.Rides;
 
@@ -77,7 +78,8 @@ public static class RideMapper
     public static string Time(DateTimeOffset utc) => LocalTime.ToLocal(utc).ToString("HH:mm");
 
     /// <summary>Precisa de Driver (com University e Preferences) e Vehicle carregados.</summary>
-    public static RideDto ToDto(Ride r, Guid viewerId, bool reservedByMe, PickupDto? pickup = null, double? distanceToDestinationKm = null)
+    public static RideDto ToDto(Ride r, Guid viewerId, bool reservedByMe, PickupDto? pickup = null, double? distanceToDestinationKm = null,
+        UserStats? driverStats = null)
     {
         var isMine = r.DriverId == viewerId;
         var participant = isMine || reservedByMe;
@@ -85,7 +87,7 @@ public static class RideMapper
             r.Id, r.Status.ToString(), r.DepartureAt, Date(r.DepartureAt), Time(r.DepartureAt),
             Place(r.Origin, participant), Place(r.Destination, true),
             r.PricePerSeat, r.Seats, r.SeatsLeft, r.Km, r.Minutes,
-            Driver(r.Driver!), VehicleDto.From(r.Vehicle!),
+            Driver(r.Driver!, driverStats), VehicleDto.From(r.Vehicle!),
             pickup, distanceToDestinationKm is null ? null : Math.Round(distanceToDestinationKm.Value, 1),
             isMine, reservedByMe);
     }
@@ -94,9 +96,9 @@ public static class RideMapper
         ? new RidePlaceDto(p.Address, p.Address, p.Neighborhood, p.Latitude, p.Longitude)
         : new RidePlaceDto(p.Neighborhood ?? "Bairro não informado", null, p.Neighborhood, null, null);
 
-    public static RideDriverDto Driver(User u) => new(
+    public static RideDriverDto Driver(User u, UserStats? stats = null) => new(
         u.Id, FirstName(u), u.Preferences?.ShowCourse == false ? null : u.Course,
-        u.University?.ShortName ?? string.Empty, u.PhotoUrl, null, 0);
+        u.University?.ShortName ?? string.Empty, u.PhotoUrl, stats?.Rating, stats?.RatingsCount ?? 0);
 
     public static string FirstName(User u) => u.FullName.Split(' ')[0];
 
