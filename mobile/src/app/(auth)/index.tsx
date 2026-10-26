@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { useRef, useState } from 'react';
 import { Modal, Pressable, ScrollView, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -17,7 +18,7 @@ type DemoAccount = { email: string; name: string; role: string };
 /** Boas-vindas. Tocar 5 vezes no logo abre o modo apresentação (contas *.demo@ do backend). */
 export default function Welcome() {
   const { t } = useTheme();
-  const { say, sayError } = useToast();
+  const { sayError } = useToast();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const [demo, setDemo] = useState<DemoAccount[] | null>(null);
@@ -68,7 +69,7 @@ export default function Welcome() {
           <Text size={40} weight={700} tracking={-0.045} leading={1.02} align="center">
             {'Carona com quem\nestuda com você.'}
           </Text>
-          <Button variant="inv" label="Entrar com e-mail da faculdade" style={{ alignSelf: 'stretch' }} onPress={() => say('O cadastro por e-mail chega na próxima etapa.')}>
+          <Button variant="inv" label="Entrar com e-mail da faculdade" style={{ alignSelf: 'stretch' }} onPress={() => router.push('/email')}>
             <Icon name="arrow" size={18} color={t.bg} strokeWidth={2.2} />
           </Button>
         </View>

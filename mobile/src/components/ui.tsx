@@ -2,9 +2,10 @@
  * Peças básicas, copiando as classes do protótipo:
  * .btn (.inv .acc .off .ghost), .field, .chip, .list/.li, .icb, .toggle.
  */
-import type { ComponentRef, ReactNode, Ref } from 'react';
+import { useState, type ComponentRef, type ReactNode, type Ref } from 'react';
 import {
   ActivityIndicator,
+  Platform,
   Pressable,
   TextInput,
   View,
@@ -90,16 +91,27 @@ type FieldProps = Omit<TextInputProps, 'ref'> & {
 };
 
 /** .field: 54px, raio 16, 17px, fundo s1, borda linha; borda azul quando confirmado, vermelha no erro. */
-export function Field({ ref, label, state, containerStyle, style, ...rest }: FieldProps) {
+export function Field({ ref, label, state, containerStyle, style, onFocus, onBlur, ...rest }: FieldProps) {
   const { t } = useTheme();
-  const borderColor = state === 'error' ? t.err : state === 'ok' ? t.accent : t.line;
+  const [focused, setFocused] = useState(false);
+  const borderColor = state === 'error' ? t.err : state === 'ok' || focused ? t.accent : t.line;
   const input = (
     <TextInput
       ref={ref}
       placeholderTextColor={t.mut2}
       selectionColor={t.accent}
       {...rest}
+      onFocus={(e) => {
+        setFocused(true);
+        onFocus?.(e);
+      }}
+      onBlur={(e) => {
+        setFocused(false);
+        onBlur?.(e);
+      }}
       style={[
+        // no navegador: tira o contorno padrão; o foco é a borda azul, como no protótipo
+        Platform.OS === 'web' ? ({ outlineWidth: 0 } as object) : null,
         {
           borderWidth: 1,
           borderColor,
