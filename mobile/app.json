@@ -1,0 +1,51 @@
+{
+  "expo": {
+    "name": "UniCar",
+    "slug": "unicar",
+    "scheme": "unicar",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "backgroundColor": "#141416",
+    "ios": {
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "O UniCar usa sua localização para mostrar de onde você sai e para o motorista te encontrar.",
+        "NSPhotoLibraryUsageDescription": "O UniCar usa suas fotos para a foto de perfil e a foto da CNH.",
+        "NSCameraUsageDescription": "O UniCar usa a câmera para a foto de perfil, a CNH e a selfie."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#141416",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "output": "single"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-status-bar",
+      "expo-secure-store",
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#141416",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 120
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

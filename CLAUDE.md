@@ -24,6 +24,8 @@ O backend faz o trabalho pesado (rota, preço, validação, tempo real); o app s
 - Etapa 4: hub `/hubs/trips` (`Realtime/`), pedir agora e corridas (`Trips/`), chat (`Chat/`). Presença de motoristas em memória (`DriverPresence`). `RouteService`: sem chave do Google, estima a rota só se `GoogleMaps:EstimateWhenNotConfigured` (ligado em Development); em produção continua 503.
 - Etapa 5: notas (`UserStatsService`: média, avaliações, viagens) no perfil público `GET /api/users/{id}`, na busca e na corrida; `POST /api/trips/{id}/ratings`; foto de perfil com SkiaSharp (512×512 JPEG, sem EXIF) em `wwwroot/uploads` (fora do Git, `PublicStorage`); "Avisos de carona" desligado silencia o "Me avise".
 - Todas as etapas da especificação feitas. Pendências conhecidas: pagamento real (Pix/cartão), envio do link de trajeto ao contato de confiança, push notifications, storage de verdade para fotos.
+- **App mobile** em `mobile/` (Expo SDK 58, TypeScript, Expo Router em `src/app`), seguindo `docs/APP-MOBILE.md` etapa por etapa. Etapa 1 feita: tema, Geist, barra de abas animada, cliente da API, modo apresentação (5 toques no logo). Testar com `npx expo start --web` até o Expo Go chegar ao iPhone; mapa vira espaço reservado no navegador. Ver `mobile/README.md`.
+- Node.js LTS instalado via winget (fica em `C:\Program Files\nodejs`).
 - Docker não roda neste PC (WSL2/Plataforma de Máquina Virtual desligada); usando PostgreSQL 16 instalado no Windows.
 
 ## O que falta: siga `docs/ESPECIFICACAO.md`
