@@ -104,6 +104,99 @@ export type RouteAlert = {
   createdAt: string;
 };
 
+// ---------- pedir agora, corrida e chat ----------
+
+export type RideRequest = {
+  id: string;
+  status: 'Searching' | 'Accepted' | 'Cancelled' | 'Expired';
+  origin: RidePlace;
+  destination: RidePlace;
+  price: number;
+  km: number;
+  minutes: number;
+  encodedPolyline: string | null;
+  createdAt: string;
+  expiresAt: string;
+  tripId: string | null;
+  driversNotified: number;
+};
+
+export type RideRequestOffer = {
+  requestId: string;
+  passengerFirstName: string;
+  passengerUniversity: string;
+  origin: RidePlace;
+  destination: RidePlace;
+  driverAmount: number;
+  km: number;
+  minutes: number;
+  pickupKm: number;
+  detourKm: number;
+  detourMinutes: number;
+  expiresAt: string;
+};
+
+export type TripStatus = 'Accepted' | 'DriverArrived' | 'InProgress' | 'Completed' | 'Cancelled';
+
+export type Trip = {
+  id: string;
+  mode: 'Now' | 'Scheduled';
+  status: TripStatus;
+  rideId: string | null;
+  rideRequestId: string | null;
+  conversationId: string;
+  origin: RidePlace;
+  destination: RidePlace;
+  km: number;
+  minutes: number;
+  driver: Ride['driver'];
+  vehicle: Ride['vehicle'];
+  passengers: { userId: string; firstName: string; photoUrl: string | null }[];
+  driverLocation: { latitude: number; longitude: number; at: string } | null;
+  etaMinutes: number | null;
+  etaTo: 'pickup' | 'destination' | null;
+  createdAt: string;
+  arrivedAt: string | null;
+  startedAt: string | null;
+  completedAt: string | null;
+  cancelledAt: string | null;
+  myPayment: { amount: number; method: 'Pix' | 'Card' | null; status: 'Open' | 'PendingPayment'; rating: number | null } | null;
+};
+
+export type DriverLocationEvent = { tripId: string; latitude: number; longitude: number; at: string };
+
+export type ChatMessage = {
+  id: string;
+  conversationId: string;
+  authorId: string | null;
+  authorFirstName: string | null;
+  kind: 'Text' | 'System';
+  text: string;
+  createdAt: string;
+};
+
+export type TripItem = {
+  kind: 'Passenger' | 'Driver';
+  mode: 'Scheduled' | 'Now';
+  rideId: string | null;
+  tripId: string | null;
+  reservationId: string | null;
+  status: string;
+  departureAt: string;
+  departureDate: string;
+  departureTime: string;
+  origin: string;
+  destination: string;
+  amount: number;
+  with: string[];
+  seatsTaken: number;
+  seats: number;
+  vehicle: string;
+  canCancel: boolean;
+};
+
+export type MyTrips = { upcoming: TripItem[]; history: TripItem[] };
+
 export type Preferences = {
   theme: 'System' | 'Light' | 'Dark';
   rideAlerts: boolean;

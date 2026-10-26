@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import { View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ToastProvider } from '@/components/Toast';
+import { RealtimeProvider } from '@/realtime/RealtimeProvider';
 import { SessionProvider, useSession } from '@/session/SessionProvider';
 import { ThemeProvider, useTheme } from '@/theme/ThemeProvider';
 import { fontFiles } from '@/theme/tokens';
@@ -40,16 +41,19 @@ function Root() {
   const signedIn = status === 'signedIn';
 
   return (
-    <View style={{ flex: 1, backgroundColor: t.bg }}>
-      <StatusBar style={t.name === 'dark' ? 'light' : 'dark'} />
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: t.bg }, animation: 'slide_from_right' }}>
-        <Stack.Protected guard={!signedIn}>
-          <Stack.Screen name="(auth)" />
-        </Stack.Protected>
-        <Stack.Protected guard={signedIn}>
-          <Stack.Screen name="(tabs)" />
-        </Stack.Protected>
-      </Stack>
-    </View>
+    <RealtimeProvider>
+      <View style={{ flex: 1, backgroundColor: t.bg }}>
+        <StatusBar style={t.name === 'dark' ? 'light' : 'dark'} />
+        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: t.bg }, animation: 'slide_from_right' }}>
+          <Stack.Protected guard={!signedIn}>
+            <Stack.Screen name="(auth)" />
+          </Stack.Protected>
+          <Stack.Protected guard={signedIn}>
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="chat/[id]" />
+          </Stack.Protected>
+        </Stack>
+      </View>
+    </RealtimeProvider>
   );
 }

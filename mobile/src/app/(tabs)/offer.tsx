@@ -2,20 +2,24 @@ import { View } from 'react-native';
 import { Icon } from '@/components/Icon';
 import { EmptyBox, Page } from '@/components/Page';
 import { H1, Text } from '@/components/Text';
+import { DriverMode } from '@/features/trips/DriverMode';
 import { useSession } from '@/session/SessionProvider';
 import { useTheme } from '@/theme/ThemeProvider';
 
-/** Aba Oferecer: bloqueada até virar motorista (User.DriverStatus). O formulário entra na etapa 5. */
+/**
+ * Aba Oferecer: bloqueada até virar motorista (User.DriverStatus). Motorista aprovado vê "Dirigir agora"
+ * (pedir agora, etapa 4); o formulário de carona marcada entra na etapa 5.
+ */
 export default function Offer() {
   const { t } = useTheme();
   const { user } = useSession();
   const status = user?.driverStatus ?? 'None';
   if (status === 'Approved') {
     return (
-      <Page>
-        <H1>Oferecer carona</H1>
-        <EmptyBox>Você é motorista verificado. O formulário de oferecer carona chega na etapa 5.</EmptyBox>
-      </Page>
+      <DriverMode
+        header={<H1>Oferecer carona</H1>}
+        footer={<EmptyBox>Publicar carona marcada (horário e vagas) chega na etapa 5.</EmptyBox>}
+      />
     );
   }
   const review = status === 'InReview';

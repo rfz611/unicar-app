@@ -1,17 +1,20 @@
+import { router } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { api } from '@/api/client';
-import type { Quote, Ride, RouteAlert, TimeSuggestion } from '@/api/types';
+import type { Quote, Ride, RideRequest, RouteAlert, TimeSuggestion, Trip } from '@/api/types';
 import { CalendarIcon, Icon } from '@/components/Icon';
 import { Avatar } from '@/components/Page';
 import { RideMap } from '@/components/RideMap';
 import { tabBarSpace } from '@/components/TabBar';
 import { Label, Text } from '@/components/Text';
 import { useToast } from '@/components/Toast';
+import { Panel, ScanBar } from '@/components/TripParts';
 import { Button, IconButton } from '@/components/ui';
 import { brl } from '@/lib/format';
 import { decodePolyline, fmtKm, type AppPlace } from '@/lib/geo';
+import { useHubEvent } from '@/realtime/RealtimeProvider';
 import { useTheme } from '@/theme/ThemeProvider';
 
 type Mode = 'now' | 'sched';
@@ -23,12 +26,53 @@ const isoDay = (offset: number) => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 };
 
-/** Rota no mapa (isRoute) e lista de caronas marcadas (isScheduled) do protótipo. */
-export function RouteView({ origin, destination, onBack }: { origin: AppPlace; destination: AppPlace; onBack: () => void }) {
+/** Rota no mapa (isRoute), "Procurando colegas" (isSearching) e caronas marcadas (isScheduled) do protótipo. */
+export function RouteView({ origin, destination, onBack, onTrip }: { origin: AppPlace; destination: AppPlace; onBack: () => void; onTrip: (tripId: string) => void }) {
   const { t } = useTheme();
   const insets = useSafeAreaInsets();
   const { say, sayError } = useToast();
-  const [step, setStep] = useState<'route' | 'scheduled'>('route');
+  const [step, setStep] = useState<'route' | 'scheduled' | 'searching'>('route');
+  const [request, setRequest] = useState<RideRequest | null>(null);
+  const [asking, setAsking] = useState(false);
+
+  // Pedir agora: cria o pedido; quem estiver dirigindo na direção recebe pelo SignalR.
+  const askNow = async () => {
+    setAsking(true);
+    try {
+      const place = (p: AppPlace) => ({ address: p.address, neighborhood: p.neighborhood, latitude: p.latitude, longitude: p.longitude });
+      const req = await api.post<RideRequest>('/api/ride-requests', { origin: place(origin), destination: place(destination) });
+      setRequest(req);
+      setStep('searching');
+    } catch (e) {
+      sayError(e);
+    } finally {
+      setAsking(false);
+    }
+  };
+
+  const cancelRequest = async () => {
+    if (request) await api.del(`/api/ride-requests/${request.id}`).catch(sayError);
+    setRequest(null);
+    setStep('route');
+  };
+
+  // Aceito: o hub avisa (TripUpdated); a cada 4 s confere o pedido, caso o aviso se perca.
+  useHubEvent<Trip>('TripUpdated', (trip) => {
+    if (request && trip.rideRequestId === request.id && trip.status === 'Accepted') onTrip(trip.id);
+  });
+  useEffect(() => {
+    if (step !== 'searching' || !request) return;
+    const timer = setInterval(async () => {
+      const r = await api.get<RideRequest>(`/api/ride-requests/${request.id}`).catch(() => null);
+      if (r?.tripId) onTrip(r.tripId);
+      else if (r?.status === 'Expired') {
+        say('Ninguém indo para lá agora. Tente uma carona marcada.');
+        setRequest(null);
+        setStep('route');
+      }
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [step, request, onTrip, say]);
   const [mode, setMode] = useState<Mode>('now');
   const [quote, setQuote] = useState<Quote | null>(null);
   const [rides, setRides] = useState<Record<Day, Ride[] | null>>({ today: null, tomorrow: null });
@@ -91,7 +135,12 @@ export function RouteView({ origin, destination, onBack }: { origin: AppPlace; d
 
       {/* topo: voltar + "origem → destino" */}
       <View style={{ position: 'absolute', left: 16, right: 16, top, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-        <IconButton icon="back" label="Voltar" size={48} onPress={step === 'scheduled' ? () => setStep('route') : onBack} />
+        <IconButton
+          icon={step === 'searching' ? 'close' : 'back'}
+          label={step === 'searching' ? 'Cancelar' : 'Voltar'}
+          size={48}
+          onPress={step === 'scheduled' ? () => setStep('route') : step === 'searching' ? cancelRequest : onBack}
+        />
         <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderColor: t.line, backgroundColor: t.glass, borderRadius: 99, minHeight: 48, paddingHorizontal: 16 }}>
           <Text size={14} color={t.mut} numberOfLines={1} style={{ flexShrink: 1, maxWidth: '45%' }}>
             {origin.short}
@@ -145,9 +194,21 @@ export function RouteView({ origin, destination, onBack }: { origin: AppPlace; d
           <Button
             variant="inv"
             label={mode === 'now' ? 'Pedir carona' : 'Ver caronas marcadas'}
-            onPress={() => (mode === 'sched' ? setStep('scheduled') : say('Pedir agora chega na próxima etapa.'))}
+            busy={asking}
+            onPress={() => (mode === 'sched' ? setStep('scheduled') : askNow())}
           />
         </View>
+      ) : step === 'searching' ? (
+        <Panel bottom={panelBottom}>
+          <View style={{ gap: 6 }}>
+            <Text size={22} weight={700} tracking={-0.035}>
+              Procurando colegas
+            </Text>
+            <Text size={15} leading={1.45} color={t.mut}>{`Avisamos quem está dirigindo na direção de ${destination.short}.`}</Text>
+          </View>
+          <ScanBar />
+          <Button variant="ghost" label="Cancelar pedido" onPress={cancelRequest} />
+        </Panel>
       ) : (
         <ScheduledSheet
           rides={rides[day]}
@@ -299,7 +360,11 @@ function ScheduledSheet({ rides, day, onDay, destination, onChanged }: { rides: 
             suggestion={suggested[r.id]}
             onSelect={() => setSelected(r.id)}
             onReserve={() => reserve(r)}
-            onChat={() => say('O chat chega na próxima etapa.')}
+            onChat={() =>
+              r.reservedByMe
+                ? router.push({ pathname: '/chat/[id]', params: { id: r.id, title: r.driver.firstName, context: `Carona das ${r.departureTime} para ${destination.short}` } })
+                : say(`Reserve um lugar para conversar com ${r.driver.firstName}.`)
+            }
             onSuggest={(m) => suggest(r, m)}
           />
         ))}
