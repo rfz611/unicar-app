@@ -1,0 +1,1467 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>UniCar</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit}
+button,input,textarea{font-family:inherit}
+input::placeholder,textarea::placeholder{color:var(--mut2)}
+.noscroll{scrollbar-width:none}
+.noscroll::-webkit-scrollbar{display:none}
+input:focus-visible,button:focus-visible,textarea:focus-visible,label:focus-within{outline:2px solid var(--fg);outline-offset:2px}
+.lbl{font-size:14px;font-weight:500;letter-spacing:0;color:var(--mut)}
+.field{border:1px solid var(--line);background:var(--s1);color:var(--fg);border-radius:16px;min-height:54px;padding:0 16px;font-size:17px;outline:0;width:100%;box-sizing:border-box}
+.field:focus{border-color:var(--accent)}
+.btn{border:0;border-radius:18px;min-height:56px;font-size:17px;font-weight:600;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:10px;text-decoration:none;box-sizing:border-box}
+.inv{background:var(--fg);color:var(--bg)}
+.acc{background:var(--accent);color:#FFFFFF}
+.off{background:var(--s3);color:var(--mut2)}
+.ghost{background:var(--s1);color:var(--fg);border:1px solid var(--line)}
+.chip{border-radius:99px;min-height:40px;padding:0 16px;font-size:14px;font-weight:600;cursor:pointer;border:1px solid var(--line);background:var(--s1);color:var(--fg);flex:none}
+.chip.on{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.list{display:flex;flex-direction:column;background:var(--s1);border:1px solid var(--line);border-radius:20px;overflow:hidden}
+.li{display:flex;align-items:center;justify-content:space-between;gap:12px;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--fg);min-height:56px;padding:0 18px;font-size:16px;cursor:pointer;text-align:left;width:100%;box-sizing:border-box}
+.li:last-child{border-bottom:0}
+.panel{position:absolute;left:12px;right:12px;bottom:110px;background:var(--s1);border:1px solid var(--line);border-radius:28px;padding:20px;display:flex;flex-direction:column;gap:16px;box-shadow:0 30px 60px -10px var(--shadow);box-sizing:border-box}
+.page{position:absolute;left:0;right:0;top:0;bottom:84px;overflow-y:auto;padding:56px 20px 44px;box-sizing:border-box;display:flex;flex-direction:column;gap:20px}
+.h1{margin:0;font-size:32px;font-weight:700;letter-spacing:-.04em;line-height:1.08}
+.icb{width:44px;height:44px;border-radius:99px;border:1px solid var(--line);background:var(--glass);color:var(--fg);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;padding:0}
+.toggle{width:52px;height:32px;border-radius:99px;border:0;position:relative;cursor:pointer;flex:none;background:var(--s3);padding:0}
+.toggle.on{background:var(--accent)}
+.toggle span{position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:99px;background:#FFFFFF;transition:transform .2s}
+.toggle.on span{transform:translateX(20px)}
+.sug{border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--fg);text-align:left;min-height:56px;padding:8px 16px;cursor:pointer;display:flex;flex-direction:column;justify-content:center;gap:2px;width:100%;box-sizing:border-box}
+.sug:last-child{border-bottom:0}
+.draw{stroke-dasharray:1400;stroke-dashoffset:1400;animation:draw 1.1s cubic-bezier(.6,0,.2,1) .15s forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.pulse{transform-box:fill-box;transform-origin:center;animation:pulse 1.8s ease-out infinite}
+.pulse2{transform-box:fill-box;transform-origin:center;animation:pulse 1.8s ease-out .9s infinite}
+@keyframes pulse{0%{transform:scale(.6);opacity:.7}100%{transform:scale(2.6);opacity:0}}
+.rise{animation:rise .45s cubic-bezier(.2,.8,.2,1) both}
+@keyframes rise{from{transform:translateY(36px);opacity:0}to{transform:none;opacity:1}}
+.slide{animation:slide .35s cubic-bezier(.2,.8,.2,1) both}
+@keyframes slide{from{transform:translateX(40px);opacity:0}to{transform:none;opacity:1}}
+.scan{position:relative;overflow:hidden}
+.scan::after{content:"";position:absolute;top:0;bottom:0;width:40%;left:-40%;background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.55),rgba(255,255,255,0));animation:scan 1.3s ease-in-out infinite}
+@keyframes scan{to{left:100%}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.tabbar{transition:-webkit-mask-position .6s cubic-bezier(.34,1.35,.5,1),mask-position .6s cubic-bezier(.34,1.35,.5,1)}
+.bubble{transition:transform .6s cubic-bezier(.34,1.35,.5,1)}
+.blob0{animation:blob0 .6s cubic-bezier(.3,.7,.4,1)}
+.blob1{animation:blob1 .6s cubic-bezier(.3,.7,.4,1)}
+@keyframes blob0{0%{transform:scale(1,1)}35%{transform:scale(1.28,.86)}70%{transform:scale(.94,1.06)}100%{transform:scale(1,1)}}
+@keyframes blob1{0%{transform:scale(1,1)}35%{transform:scale(1.28,.86)}70%{transform:scale(.94,1.06)}100%{transform:scale(1,1)}}
+.tabicon{transition:opacity .25s ease,transform .45s cubic-bezier(.34,1.35,.5,1)}
+.tabbtn:hover .tabicon{transform:translateY(-3px)}
+.bicon{animation:bicon .45s ease both}
+@keyframes bicon{from{opacity:0;transform:scale(.6) rotate(-12deg)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.draw{animation:none;stroke-dashoffset:0}.pulse,.pulse2,.rise,.slide,.scan::after,.blob0,.blob1,.bicon{animation:none}.tabbar,.bubble,.tabicon{transition:none}}
+</style>
+</helmet>
+<div style="{{rootStyle}}">
+
+<sc-if value="{{isWelcome}}" hint-placeholder-val="{{true}}">
+  <div style="position:absolute;inset:0;display:flex;flex-direction:column;padding:72px 24px 40px;box-sizing:border-box">
+    <div style="position:absolute;left:-60px;right:-60px;bottom:-220px;height:520px;background:radial-gradient(50% 50% at 50% 50%, {{accentGlow}}, rgba(0,0,0,0))"></div>
+    <div style="position:absolute;left:-30px;top:560px;width:520px;height:1.5px;background:linear-gradient(90deg, rgba(0,0,0,0), {{accent}});transform:rotate(-16deg);transform-origin:left center"></div>
+    <div style="position:relative;display:flex;align-items:center;gap:10px">
+      <svg width="28" height="28" viewBox="0 0 80 80" aria-hidden="true"><path d="M22 18 V44 A18 18 0 0 0 58 44 V35" fill="none" style="stroke:var(--fg)" stroke-width="11" stroke-linecap="round"></path><circle cx="58" cy="18" r="7" fill="{{accent}}"></circle></svg>
+      <span style="font-size:24px;font-weight:700;letter-spacing:-0.05em">unicar</span>
+    </div>
+    <div style="position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:40px;text-align:center;padding-bottom:56px">
+      <div style="width:168px;height:168px;border-radius:44px;background:radial-gradient(130% 70% at 50% 118%, {{accent}} 0%, {{accentDeep}} 34%, #0B0B0C 66%);box-shadow:0 50px 110px -30px {{accent}}, inset 0 1px 0 rgba(255,255,255,0.14);display:flex;align-items:center;justify-content:center">
+        <svg width="96" height="96" viewBox="0 0 80 80" aria-hidden="true"><path d="M22 18 V44 A18 18 0 0 0 58 44 V35" fill="none" stroke="#FFFFFF" stroke-width="10.5" stroke-linecap="round"></path><circle cx="58" cy="18" r="6.8" fill="#FFFFFF"></circle></svg>
+      </div>
+      <h1 style="margin:0;font-size:40px;font-weight:700;letter-spacing:-0.045em;line-height:1.02">Carona com quem<br>estuda com você.</h1>
+      <button onClick="{{goEmail}}" class="btn inv">
+        Entrar com e-mail da faculdade
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+      </button>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{isAuthFlow}}" hint-placeholder-val="{{false}}">
+  <div style="position:absolute;left:0;right:0;top:0;display:flex;align-items:center;gap:12px;padding:56px 16px 0">
+    <button onClick="{{authBack}}" aria-label="Voltar" class="icb">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"></path></svg>
+    </button>
+    <div style="flex:1;display:flex;gap:6px">
+      <sc-for list="{{bars}}" as="b" hint-placeholder-count="3"><span style="{{b.style}}"></span></sc-for>
+    </div>
+    <div style="font-size:13px;color:var(--mut2);width:44px;text-align:right;font-variant-numeric:tabular-nums">{{stepLabel}}</div>
+  </div>
+</sc-if>
+
+<sc-if value="{{isEmail}}" hint-placeholder-val="{{false}}">
+  <div style="position:absolute;left:0;right:0;top:112px;bottom:0;display:flex;flex-direction:column;padding:24px 24px 32px;box-sizing:border-box;margin:0">
+    <h1 class="h1">Qual é o seu<br>e-mail da faculdade?</h1>
+    <p style="margin:12px 0 0;font-size:15px;line-height:1.5;color:var(--mut)">Mandamos um código para confirmar que você estuda lá.</p>
+    <label style="margin-top:32px;display:flex;flex-direction:column;gap:10px">
+      <span class="lbl">E-mail institucional</span>
+      <input onKeyDown="{{submitEmailKey}}" type="email" inputmode="email" autocomplete="email" value="{{email}}" onInput="{{setEmail}}" placeholder="nome@ufpr.br" class="field" style="{{emailBorder}}">
+    </label>
+    <sc-if value="{{hasUni}}" hint-placeholder-val="{{false}}">
+      <div style="margin-top:14px;display:inline-flex;align-self:flex-start;align-items:center;gap:10px;background:var(--s2);border:1px solid var(--line);border-radius:99px;padding:8px 14px 8px 10px">
+        <span style="width:22px;height:22px;border-radius:99px;background:{{accent}};display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg></span>
+        <span style="font-size:14px;font-weight:500">{{uniName}} reconhecida</span>
+      </div>
+    </sc-if>
+    <sc-if value="{{hasError}}" hint-placeholder-val="{{false}}">
+      <div role="alert" style="margin-top:14px;font-size:14px;line-height:1.45;color:var(--err)">{{error}}</div>
+    </sc-if>
+    <div style="flex:1"></div>
+    <button onClick="{{submitEmail}}" class="{{emailBtn}}">Enviar código</button>
+  </div>
+</sc-if>
+
+<sc-if value="{{isCode}}" hint-placeholder-val="{{false}}">
+  <div style="position:absolute;left:0;right:0;top:112px;bottom:0;display:flex;flex-direction:column;padding:24px 24px 32px;box-sizing:border-box;margin:0">
+    <h1 class="h1">Confere seu<br>e-mail.</h1>
+    <p style="margin:12px 0 0;font-size:15px;line-height:1.5;color:var(--mut)">Mandamos 6 números para <span style="color:var(--fg);font-weight:500">{{email}}</span>.</p>
+    <label style="margin-top:36px;position:relative;display:block;height:68px">
+      <span class="sr">Código de verificação</span>
+      <div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;height:68px">
+        <sc-for list="{{digits}}" as="d" hint-placeholder-count="6"><span style="{{d.style}}">{{d.ch}}</span></sc-for>
+      </div>
+      <input onKeyDown="{{submitCodeKey}}" inputmode="numeric" autocomplete="one-time-code" maxlength="6" value="{{code}}" onInput="{{setCode}}" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;border:0;cursor:text">
+    </label>
+    <div style="margin-top:20px;display:flex;justify-content:space-between;align-items:center;font-size:14px;color:var(--mut2)">
+      <span>Não chegou? Olhe o spam.</span>
+      <button onClick="{{resend}}" style="border:0;background:transparent;color:var(--fg);font-size:14px;font-weight:600;min-height:44px;padding:0 4px;cursor:pointer">{{resendLabel}}</button>
+    </div>
+    <div style="flex:1"></div>
+    <div class="lbl" style="margin-bottom:16px">Demonstração: qualquer código de 6 números</div>
+    <button onClick="{{submitCode}}" class="{{codeBtn}}">Verificar</button>
+  </div>
+</sc-if>
+
+<sc-if value="{{isSignup}}" hint-placeholder-val="{{false}}">
+  <div class="noscroll" style="position:absolute;left:0;right:0;top:112px;bottom:0;overflow-y:auto;display:flex;flex-direction:column;gap:16px;padding:20px 24px 32px;box-sizing:border-box;margin:0">
+    <h1 class="h1">Seu perfil</h1>
+    <p style="margin:-6px 0 4px;font-size:15px;line-height:1.5;color:var(--mut)">Use seu nome completo, como está na faculdade.</p>
+    <label style="display:flex;flex-direction:column;gap:8px">
+      <span class="lbl">Nome completo</span>
+      <input onKeyDown="{{submitSignupKey}}" value="{{dName}}" onInput="{{setDName}}" autocomplete="name" placeholder="Seu nome completo" class="field">
+    </label>
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+      <label style="display:flex;flex-direction:column;gap:8px"><span class="lbl">Nascimento</span><input value="{{dBirth}}" onInput="{{setDBirth}}" onKeyDown="{{submitSignupKey}}" inputmode="numeric" maxlength="10" placeholder="DD/MM/AAAA" class="field" style="min-width:0"></label>
+      <label style="display:flex;flex-direction:column;gap:8px"><span class="lbl">Celular</span><input value="{{dPhone}}" onInput="{{setDPhone}}" onKeyDown="{{submitSignupKey}}" inputmode="tel" maxlength="15" placeholder="(41) 99999-0000" class="field" style="min-width:0"></label>
+    </div>
+    <label style="display:flex;flex-direction:column;gap:8px"><span class="lbl">CPF</span><input value="{{dCpf}}" onInput="{{setDCpf}}" onKeyDown="{{submitSignupKey}}" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" class="field"></label>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <label style="display:flex;flex-direction:column;gap:8px">
+        <span class="lbl">Curso</span>
+        <input onKeyDown="{{submitSignupKey}}" value="{{cq}}" onInput="{{setCq}}" placeholder="Busque seu curso" autocomplete="off" class="field" style="{{courseBorder}}">
+      </label>
+      <sc-if value="{{showCourseSug}}" hint-placeholder-val="{{false}}">
+        <div class="list" role="listbox" aria-label="Cursos">
+          <sc-for list="{{courseSug}}" as="c" hint-placeholder-count="3"><button role="option" onClick="{{c.pick}}" class="sug"><span style="font-size:16px">{{c.name}}</span></button></sc-for>
+        </div>
+      </sc-if>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <span class="lbl">Turno</span>
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+        <sc-for list="{{shifts}}" as="t" hint-placeholder-count="3"><button onClick="{{t.pick}}" aria-pressed="{{t.on}}" class="chip {{t.cls}}" style="min-height:48px">{{t.label}}</button></sc-for>
+      </div>
+    </div>
+    <label style="display:flex;flex-direction:column;gap:8px"><span class="lbl">Período</span><input value="{{dPeriod}}" onInput="{{setDPeriod}}" inputmode="numeric" maxlength="2" placeholder="Em que período você está? Ex.: 3" class="field"></label>
+    <div style="flex:1;min-height:12px"></div>
+    <sc-if value="{{hasError}}" hint-placeholder-val="{{false}}">
+      <div role="alert" style="font-size:14px;line-height:1.45;color:var(--err)">{{error}}</div>
+    </sc-if>
+    <button onClick="{{submitSignup}}" class="{{signupBtn}}">Criar meu perfil</button>
+  </div>
+</sc-if>
+
+<sc-if value="{{isDone}}" hint-placeholder-val="{{false}}">
+  <div style="position:absolute;inset:0;display:flex;flex-direction:column;padding:72px 24px 40px;box-sizing:border-box">
+    <div style="position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;text-align:center">
+      <span style="width:120px;height:120px;border-radius:99px;overflow:hidden;background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:600;box-shadow:0 0 0 3px var(--bg),0 0 0 5px {{accent}}">{{initials}}</span>
+      <div style="font-size:36px;font-weight:700;letter-spacing:-0.045em;line-height:1.05">Tudo pronto,<br>{{firstName}}.</div>
+      <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:8px">
+        <sc-for list="{{userTags}}" as="t" hint-placeholder-count="3"><span style="font-size:14px;font-weight:500;border:1px solid var(--line);background:var(--s1);border-radius:99px;padding:8px 14px">{{t.label}}</span></sc-for>
+      </div>
+    </div>
+    <button onClick="{{enterApp}}" class="btn inv" style="position:relative">Ver caronas</button>
+  </div>
+</sc-if>
+
+<sc-if value="{{isApp}}" hint-placeholder-val="{{false}}">
+
+<sc-if value="{{isWhere}}" hint-placeholder-val="{{false}}">
+  <div class="page noscroll" style="gap:22px;padding-top:52px">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:8px">
+        <svg width="24" height="24" viewBox="0 0 80 80" aria-hidden="true"><path d="M22 18 V44 A18 18 0 0 0 58 44 V35" fill="none" style="stroke:var(--fg)" stroke-width="11" stroke-linecap="round"></path><circle cx="58" cy="18" r="7" fill="{{accent}}"></circle></svg>
+        <span style="font-size:21px;font-weight:700;letter-spacing:-0.05em">unicar</span>
+      </div>
+      <button onClick="{{goProfile}}" aria-label="Abrir perfil" style="width:44px;height:44px;border-radius:99px;border:0;padding:0;overflow:hidden;background:var(--s3);color:var(--fg);font-size:15px;font-weight:600;cursor:pointer;box-shadow:0 0 0 2px var(--bg),0 0 0 3.5px {{accent}}">
+        <sc-if value="{{hasPhoto}}" hint-placeholder-val="{{false}}"><img src="{{photo}}" alt="" style="width:100%;height:100%;object-fit:cover;display:block"></sc-if>
+        <sc-if value="{{noPhoto}}" hint-placeholder-val="{{true}}">{{initials}}</sc-if>
+      </button>
+    </div>
+
+    <h1 style="margin:6px 0 0;font-size:40px;font-weight:700;letter-spacing:-0.05em;line-height:1">{{whereTitle}}</h1>
+
+    <div style="display:flex;flex-direction:column;background:var(--s1);border:1px solid var(--line);border-radius:22px;padding:4px 16px">
+      <sc-if value="{{editingOrigin}}" hint-placeholder-val="{{false}}">
+        <label style="display:flex;align-items:center;gap:12px;min-height:56px;border-bottom:1px solid var(--line)">
+          <span style="width:10px;height:10px;border-radius:99px;border:2.5px solid var(--fg);box-sizing:border-box;flex:none"></span>
+          <input value="{{query}}" onInput="{{setQuery}}" onKeyDown="{{queryKey}}" placeholder="De onde você sai?" aria-label="Origem" style="flex:1;min-width:0;border:0;outline:0;background:transparent;color:var(--fg);font-size:17px">
+        </label>
+      </sc-if>
+      <sc-if value="{{showOriginRow}}" hint-placeholder-val="{{true}}">
+        <button onClick="{{editOrigin}}" style="display:flex;align-items:center;gap:12px;min-height:56px;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--fg);padding:0;cursor:pointer;text-align:left;width:100%">
+          <span style="width:10px;height:10px;border-radius:99px;border:2.5px solid var(--fg);box-sizing:border-box;flex:none"></span>
+          <span style="flex:1;display:flex;flex-direction:column;gap:2px">
+            <span style="font-size:15px">{{originName}}</span>
+            <span style="font-size:12px;color:var(--mut2)">{{originSub}}</span>
+          </span>
+          <span style="font-size:13px;font-weight:600;color:{{accentText}}">Alterar</span>
+        </button>
+      </sc-if>
+      <sc-if value="{{editingDest}}" hint-placeholder-val="{{true}}">
+        <label style="display:flex;align-items:center;gap:12px;min-height:56px">
+          <span style="width:10px;height:10px;border-radius:99px;background:{{accent}};flex:none"></span>
+          <input value="{{query}}" onInput="{{setQuery}}" onKeyDown="{{queryKey}}" placeholder="{{destPlaceholder}}" aria-label="Destino" style="flex:1;min-width:0;border:0;outline:0;background:transparent;color:var(--fg);font-size:17px">
+        </label>
+      </sc-if>
+      <sc-if value="{{showDestRow}}" hint-placeholder-val="{{false}}">
+        <button onClick="{{editDest}}" style="display:flex;align-items:center;gap:12px;min-height:56px;border:0;background:transparent;color:var(--mut2);padding:0;cursor:pointer;text-align:left;width:100%;font-size:15px">
+          <span style="width:10px;height:10px;border-radius:99px;background:{{accent}};flex:none"></span>Para onde?
+        </button>
+      </sc-if>
+    </div>
+
+    <sc-if value="{{showShortcuts}}" hint-placeholder-val="{{true}}">
+      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+        <button onClick="{{goUni}}" style="border:1px solid var(--line);border-radius:20px;background:var(--s1);color:var(--fg);padding:16px;min-height:104px;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;text-align:left">
+          <span style="width:36px;height:36px;border-radius:12px;background:{{accent}};display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-5 9 5-9 5-9-5zM7 11.5V16c0 1.5 2.2 3 5 3s5-1.5 5-3v-4.5"></path></svg></span>
+          <span style="display:flex;flex-direction:column;gap:2px"><span style="font-size:16px;font-weight:700">Minha faculdade</span><span style="font-size:13px;color:var(--mut)">{{uniShort}}</span></span>
+        </button>
+        <button onClick="{{goHome}}" style="border:1px solid var(--line);border-radius:20px;background:var(--s1);color:var(--fg);padding:16px;min-height:104px;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;text-align:left">
+          <span style="width:36px;height:36px;border-radius:12px;background:var(--s3);display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg></span>
+          <span style="display:flex;flex-direction:column;gap:2px"><span style="font-size:16px;font-weight:700">Casa</span><span style="font-size:13px;color:var(--mut)">{{homeShort}}</span></span>
+        </button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isPickingHome}}" hint-placeholder-val="{{false}}">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--s2);border-radius:16px;padding:12px 14px">
+        <span style="font-size:14px;color:var(--mut)">Escolha onde fica sua casa. Os outros só veem o bairro.</span>
+        <button onClick="{{cancelPick}}" style="border:0;background:transparent;color:var(--fg);font-weight:600;font-size:14px;min-height:44px;cursor:pointer">Cancelar</button>
+      </div>
+    </sc-if>
+
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <div class="lbl" style="padding:0 2px 2px">{{listTitle}}</div>
+      <sc-for list="{{places}}" as="p" hint-placeholder-count="4">
+        <button onClick="{{p.pick}}" style="display:flex;align-items:center;gap:14px;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;color:var(--fg);min-height:64px;padding:10px 2px;cursor:pointer;text-align:left;width:100%">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;color:var(--mut2)"><path d="{{p.icon}}"></path></svg>
+          <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+            <span style="font-size:15px;font-weight:500;line-height:1.3">{{p.name}}</span>
+            <span style="font-size:13px;color:var(--mut2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{p.addr}}</span>
+          </span>
+          <span style="font-size:13px;color:var(--mut2);flex:none;font-variant-numeric:tabular-nums">{{p.km}}</span>
+        </button>
+      </sc-for>
+      <sc-if value="{{noPlaces}}" hint-placeholder-val="{{false}}">
+        <div style="padding:16px 4px;font-size:15px;color:var(--mut)">Nada encontrado. Tente o nome do lugar ou da rua.</div>
+      </sc-if>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{isMapStep}}" hint-placeholder-val="{{false}}">
+  <div style="{{mapWrapStyle}}">
+    <svg width="390" height="844" viewBox="0 0 390 844" aria-hidden="true" style="display:block">
+      <defs>
+        <pattern id="ucGrid" width="24" height="20" patternUnits="userSpaceOnUse"><path d="M0 0.5H24M0.5 0V20" fill="none" stroke-width="1.6" style="stroke:var(--map-road2)"></path></pattern>
+        <pattern id="ucGridW" width="28" height="18" patternUnits="userSpaceOnUse" patternTransform="rotate(24)"><path d="M0 0.5H28M0.5 0V18" fill="none" stroke-width="1.6" style="stroke:var(--map-road2)"></path></pattern>
+        <pattern id="ucGridE" width="22" height="26" patternUnits="userSpaceOnUse" patternTransform="rotate(-17)"><path d="M0 0.5H22M0.5 0V26" fill="none" stroke-width="1.6" style="stroke:var(--map-road2)"></path></pattern>
+        <clipPath id="ucWest"><path d="M0 0H72C92 200 58 380 96 560C112 650 62 760 0 844Z"></path></clipPath>
+        <clipPath id="ucEast"><path d="M332 0C312 220 346 420 322 600C302 720 342 800 390 844V0Z"></path></clipPath>
+      </defs>
+      <rect x="0" y="0" width="390" height="844" style="fill:var(--map-bg)"></rect>
+      <rect x="0" y="0" width="390" height="844" fill="url(#ucGrid)"></rect>
+      <g clip-path="url(#ucWest)"><rect x="0" y="0" width="390" height="844" style="fill:var(--map-bg)"></rect><rect x="0" y="0" width="390" height="844" fill="url(#ucGridW)"></rect></g>
+      <g clip-path="url(#ucEast)"><rect x="0" y="0" width="390" height="844" style="fill:var(--map-bg)"></rect><rect x="0" y="0" width="390" height="844" fill="url(#ucGridE)"></rect></g>
+      <g style="fill:var(--map-park)">
+        <path d="M10 290C40 270 70 285 68 320C66 360 40 385 18 372C0 360 -5 305 10 290Z"></path>
+        <path d="M214 222C226 214 240 220 238 232C236 244 220 246 213 238C208 232 208 226 214 222Z"></path>
+        <path d="M272 318C292 304 322 312 324 334C326 356 300 366 282 358C266 350 260 328 272 318Z"></path>
+        <path d="M165 50C190 34 230 44 226 74C222 98 186 100 170 88C156 78 152 60 165 50Z"></path>
+        <path d="M250 640C290 618 352 630 360 668C368 706 320 728 282 718C248 708 228 660 250 640Z"></path>
+      </g>
+      <path d="M208 -10C214 60 196 110 222 150C244 186 226 214 248 248C268 280 256 330 272 372C286 410 262 470 284 540C300 600 278 700 296 860" fill="none" stroke-width="3.5" stroke-linecap="round" style="stroke:var(--map-water)"></path>
+      <g fill="none" stroke-width="7" stroke-linecap="round" style="stroke:var(--map-road)">
+        <path d="M-10 300C80 292 160 284 250 262C300 250 350 246 400 238"></path>
+        <path d="M-10 332C90 326 180 318 270 300C320 290 360 286 400 282"></path>
+        <path d="M362 -10C342 120 354 240 328 360C308 450 332 560 314 860"></path>
+        <path d="M205 255C190 360 172 470 160 560C150 650 150 760 140 860"></path>
+        <path d="M205 255C206 210 204 180 205 120C206 80 200 40 196 -10"></path>
+        <path d="M200 300C160 360 120 420 80 480C50 525 20 560 -10 600"></path>
+        <path d="M-10 142C100 150 220 160 400 150"></path>
+      </g>
+      <g font-size="10" font-weight="500" style="fill:var(--map-label)">
+        <text x="214" y="148">Centro Cívico</text><text x="306" y="138">Bacacheri</text><text x="20" y="220">Ecoville</text>
+        <text x="214" y="248">Centro</text><text x="304" y="282">Jd. das Américas</text><text x="116" y="306">Batel</text>
+        <text x="146" y="446">Água Verde</text><text x="230" y="420">Prado Velho</text><text x="44" y="514">Portão</text>
+        <text x="268" y="338">Jardim Botânico</text>
+      </g>
+      <g font-size="9" font-style="italic" style="fill:var(--map-label)" opacity="0.85">
+        <text x="30" y="292" transform="rotate(-3 30 292)">Av. Sete de Setembro</text>
+        <text x="348" y="230" transform="rotate(-82 348 230)">Linha Verde</text>
+      </g>
+      <path d="{{routeD}}" fill="none" stroke="{{accent}}" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" opacity="0.2"></path>
+      <path class="draw" d="{{routeD}}" fill="none" stroke="{{accent}}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path>
+      <path d="{{driverD}}" fill="none" stroke-width="2" stroke-dasharray="3 6" stroke-linecap="round" style="stroke:var(--fg)" opacity="0.6"></path>
+      <circle class="pulse" cx="{{ox}}" cy="{{oy}}" r="12" fill="{{accent}}" opacity="{{ringOpacity}}"></circle>
+      <circle class="pulse2" cx="{{ox}}" cy="{{oy}}" r="12" fill="{{accent}}" opacity="{{ringOpacity}}"></circle>
+      <circle cx="{{dx}}" cy="{{dy}}" r="22" fill="{{accent}}" opacity="0.2"></circle>
+      <circle cx="{{dx}}" cy="{{dy}}" r="9" fill="{{accent}}"></circle>
+      <circle cx="{{dx}}" cy="{{dy}}" r="3" fill="#FFFFFF"></circle>
+      <circle class="pulse" cx="{{meX}}" cy="{{meY}}" r="10" style="fill:var(--fg)" opacity="0.3"></circle>
+      <circle cx="{{meX}}" cy="{{meY}}" r="8" stroke-width="3" style="fill:var(--bg);stroke:var(--fg)"></circle>
+      <rect x="{{carX}}" y="{{carY}}" width="24" height="24" rx="8" style="fill:var(--fg)"></rect>
+      <path d="{{carIcon}}" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--bg)"></path>
+    </svg>
+  </div>
+
+  <div style="position:absolute;left:16px;right:16px;top:52px;display:flex;align-items:center;gap:10px">
+    <button onClick="{{mapBack}}" aria-label="{{backLabel}}" class="icb" style="width:48px;height:48px">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{backIcon}}"></path></svg>
+    </button>
+    <div style="flex:1;min-width:0;display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:var(--glass);border-radius:99px;min-height:48px;padding:0 16px;box-sizing:border-box">
+      <span style="font-size:14px;color:var(--mut);white-space:nowrap">{{originShort}}</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;color:var(--mut)"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+      <span style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{destShort}}</span>
+    </div>
+  </div>
+
+  <sc-if value="{{isRoute}}" hint-placeholder-val="{{false}}">
+    <div class="panel rise">
+      <div style="display:flex;gap:28px;padding:0 4px">
+        <div style="display:flex;flex-direction:column;gap:2px"><span class="lbl" style="font-size:13px">Distância</span><span style="font-size:24px;font-weight:600;letter-spacing:-0.04em">{{km}}</span></div>
+        <div style="display:flex;flex-direction:column;gap:2px"><span class="lbl" style="font-size:13px">Tempo</span><span style="font-size:24px;font-weight:600;letter-spacing:-0.04em">{{min}}</span></div>
+      </div>
+      <div role="radiogroup" aria-label="Como você quer ir" style="display:flex;flex-direction:column;gap:8px">
+        <button role="radio" aria-checked="{{nowOn}}" onClick="{{pickNow}}" style="{{nowStyle}}">
+          <span style="width:44px;height:44px;border-radius:14px;background:var(--s3);display:flex;align-items:center;justify-content:center;flex:none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 3L5 14h6l-1 7 8-11h-6z"></path></svg></span>
+          <span style="flex:1;display:flex;flex-direction:column;gap:2px;text-align:left"><span style="font-size:16px;font-weight:600">Pedir agora</span><span style="font-size:13px;color:var(--mut)">Quem já vai para lá</span></span>
+          <span style="font-size:20px;font-weight:700;letter-spacing:-0.03em">{{nowPrice}}</span>
+        </button>
+        <button role="radio" aria-checked="{{schedOn}}" onClick="{{pickSched}}" style="{{schedStyle}}">
+          <span style="width:44px;height:44px;border-radius:14px;background:var(--s3);display:flex;align-items:center;justify-content:center;flex:none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg></span>
+          <span style="flex:1;display:flex;flex-direction:column;gap:2px;text-align:left"><span style="font-size:16px;font-weight:600">Caronas marcadas</span><span style="font-size:13px;color:var(--mut)">{{schedSub}}</span></span>
+          <span style="display:flex;flex-direction:column;align-items:flex-end"><span style="font-size:11px;color:var(--mut2)">a partir de</span><span style="font-size:20px;font-weight:700;letter-spacing:-0.03em">{{schedPrice}}</span></span>
+        </button>
+      </div>
+      <button onClick="{{confirmRoute}}" class="btn inv">{{routeCta}}</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isSearching}}" hint-placeholder-val="{{false}}">
+    <div class="panel rise">
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="font-size:22px;font-weight:700;letter-spacing:-0.035em">Procurando colegas</div>
+        <div style="font-size:15px;color:var(--mut);line-height:1.45">Avisamos quem está dirigindo na direção de {{destShort}}.</div>
+      </div>
+      <div class="scan" style="height:4px;border-radius:99px;background:{{accent}}"></div>
+      <button onClick="{{cancelRide}}" class="btn ghost">Cancelar pedido</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isMatched}}" hint-placeholder-val="{{false}}">
+    <div class="panel rise">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <span class="lbl" style="font-size:13px;color:{{accentText}}">{{matchKicker}}</span>
+          <span style="font-size:22px;font-weight:700;letter-spacing:-0.035em">{{matchTitle}}</span>
+        </div>
+        <sc-if value="{{driverComing}}" hint-placeholder-val="{{true}}">
+          <span style="display:flex;align-items:baseline;gap:4px"><span style="font-size:48px;font-weight:600;letter-spacing:-0.06em;line-height:0.9;font-variant-numeric:tabular-nums">{{eta}}</span><span style="font-size:15px;color:var(--mut)">min</span></span>
+        </sc-if>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;background:var(--s2);border-radius:18px;padding:12px">
+        <span style="width:44px;height:44px;border-radius:99px;background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;flex:none">MS</span>
+        <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+          <span style="display:flex;align-items:center;gap:6px;font-size:16px;font-weight:600"><span>Marina Souza</span><svg width="12" height="12" viewBox="0 0 24 24" fill="{{accent}}" aria-hidden="true"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z"></path></svg><span style="font-size:13px;font-weight:500;color:var(--mut)">4,9</span></span>
+          <span style="font-size:13px;color:var(--mut2)">Arquitetura na UFPR</span>
+        </span>
+        <span style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+          <span style="font-size:13px;color:var(--mut)">Gol prata</span>
+          <span style="font-family:'Geist Mono',monospace;font-size:12px;font-weight:500;background:var(--fg);color:var(--bg);border-radius:6px;padding:3px 7px;letter-spacing:0.06em">BRA2E19</span>
+        </span>
+      </div>
+      <sc-if value="{{driverComing}}" hint-placeholder-val="{{true}}">
+        <div style="display:flex;gap:8px">
+          <button onClick="{{openChatMarina}}" class="btn inv" style="flex:1;min-height:52px;font-size:15px">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H8l-4 4z"></path></svg>
+            {{chatBtnLabel}}
+          </button>
+          <button onClick="{{cancelRide}}" class="btn ghost" style="width:auto;min-height:52px;padding:0 18px;font-size:15px">Cancelar</button>
+        </div>
+      </sc-if>
+      <sc-if value="{{driverHere}}" hint-placeholder-val="{{false}}">
+        <button onClick="{{startRide}}" class="btn acc">Já embarquei</button>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isRiding}}" hint-placeholder-val="{{false}}">
+    <div class="panel rise">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px">
+        <div style="display:flex;flex-direction:column;gap:4px;min-width:0">
+          <span class="lbl" style="font-size:13px;color:{{accentText}}">Em viagem</span>
+          <span style="font-size:20px;font-weight:700;letter-spacing:-0.035em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{destShort}}</span>
+        </div>
+        <span style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex:none">
+          <span style="font-size:12px;color:var(--mut2)">chegada</span>
+          <span style="font-size:36px;font-weight:600;letter-spacing:-0.05em;line-height:0.9;font-variant-numeric:tabular-nums">{{arrival}}</span>
+        </span>
+      </div>
+      <div style="height:6px;border-radius:99px;background:var(--s3);overflow:hidden"><div style="{{progressStyle}}"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:14px;color:var(--mut)"><span>Faltam {{kmLeft}}</span><span>Com Marina no Gol prata</span></div>
+      <div style="display:flex;gap:8px">
+        <button onClick="{{toggleShare}}" aria-pressed="{{shareOnAttr}}" class="btn {{shareCls}}" style="flex:1;min-height:52px;font-size:15px">{{shareLabel}}</button>
+        <button onClick="{{openChatMarina}}" aria-label="Mensagem para Marina" class="btn ghost" style="width:52px;min-height:52px;padding:0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H8l-4 4z"></path></svg></button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isArrived}}" hint-placeholder-val="{{false}}">
+    <div class="panel rise">
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="font-size:26px;font-weight:700;letter-spacing:-0.04em">Você chegou</div>
+        <div style="display:flex;justify-content:space-between;gap:12px;font-size:15px;color:var(--mut)"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{destShort}}</span><span style="color:var(--fg);font-weight:600;flex:none">{{nowPrice}}</span></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <span style="font-size:15px">Como foi a carona com a Marina?</span>
+        <div role="radiogroup" aria-label="Nota da carona" style="display:flex;gap:8px">
+          <sc-for list="{{stars}}" as="st" hint-placeholder-count="5">
+            <button role="radio" aria-checked="{{st.on}}" aria-label="{{st.label}}" onClick="{{st.pick}}" style="flex:1;height:52px;border-radius:14px;border:1px solid var(--line);background:var(--s2);cursor:pointer;display:flex;align-items:center;justify-content:center">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="{{st.fill}}" stroke="{{st.stroke}}" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z"></path></svg>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <span style="font-size:15px">Como você quer pagar?</span>
+        <div role="radiogroup" aria-label="Forma de pagamento" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
+          <sc-for list="{{payOpts}}" as="pm" hint-placeholder-count="2"><button role="radio" aria-checked="{{pm.on}}" onClick="{{pm.pick}}" class="chip {{pm.cls}}" style="min-height:52px">{{pm.label}}</button></sc-for>
+        </div>
+      </div>
+      <button onClick="{{finish}}" class="{{finishBtn}}">{{finishLabel}}</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isScheduled}}" hint-placeholder-val="{{false}}">
+    <section aria-label="Caronas marcadas" class="rise" style="position:absolute;left:0;right:0;bottom:84px;height:450px;background:var(--bg);border-radius:28px 28px 0 0;border-top:1px solid var(--line);box-shadow:0 -30px 60px -20px var(--shadow);display:flex;flex-direction:column">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;padding:22px 20px 14px">
+        <h2 style="margin:0;font-size:24px;font-weight:700;letter-spacing:-0.04em">Caronas marcadas</h2>
+        <span class="lbl">Hoje</span>
+      </div>
+      <div class="noscroll" style="flex:1;overflow-y:auto;padding:0 16px 20px;display:flex;flex-direction:column;gap:10px">
+        <sc-for list="{{rides}}" as="r" hint-placeholder-count="2">
+          <article style="{{r.cardStyle}}">
+            <button onClick="{{r.pick}}" aria-label="{{r.aria}}" style="all:unset;cursor:pointer;display:flex;flex-direction:column;gap:14px;padding:16px;box-sizing:border-box;width:100%">
+              <span style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+                <span style="display:flex;flex-direction:column;gap:8px">
+                  <span style="font-size:44px;font-weight:600;letter-spacing:-0.06em;line-height:0.9;font-variant-numeric:tabular-nums">{{r.time}}</span>
+                  <span style="font-size:14px;color:var(--mut)">{{r.pickup}}</span>
+                </span>
+                <span style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+                  <span style="font-size:22px;font-weight:700;letter-spacing:-0.03em">{{r.price}}</span>
+                  <span style="{{r.seatStyle}}">{{r.seats}}</span>
+                </span>
+              </span>
+              <span style="display:flex;align-items:center;gap:10px;border-top:1px solid var(--line);padding-top:12px">
+                <span style="width:36px;height:36px;border-radius:99px;background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex:none">{{r.initials}}</span>
+                <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                  <span style="display:flex;align-items:center;gap:6px;font-size:15px;font-weight:600"><span>{{r.driver}}</span><svg width="12" height="12" viewBox="0 0 24 24" fill="{{accent}}" aria-hidden="true"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z"></path></svg><span style="font-size:13px;font-weight:500;color:var(--mut)">{{r.rating}}</span></span>
+                  <span style="font-size:13px;color:var(--mut2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{r.meta}}</span>
+                </span>
+                <span style="font-size:13px;color:var(--mut);white-space:nowrap">{{r.car}}</span>
+              </span>
+            </button>
+            <sc-if value="{{r.selected}}" hint-placeholder-val="{{false}}">
+              <div style="display:flex;flex-direction:column;gap:10px;padding:0 16px 16px">
+                <div style="display:flex;gap:8px">
+                  <button onClick="{{r.reserve}}" class="btn {{r.btnCls}}" style="flex:1;min-height:52px;font-size:16px">{{r.btnLabel}}</button>
+                  <button onClick="{{r.chat}}" aria-label="{{r.chatAria}}" class="btn ghost" style="width:52px;min-height:52px;padding:0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H8l-4 4z"></path></svg></button>
+                </div>
+                <sc-if value="{{r.booked}}" hint-placeholder-val="{{false}}">
+                  <div style="display:flex;flex-direction:column;gap:8px">
+                    <span style="font-size:13px;color:var(--mut)">{{r.suggestLabel}}</span>
+                    <div style="display:flex;gap:8px">
+                      <button onClick="{{r.earlier}}" class="btn ghost" style="min-height:44px;font-size:14px">10 min antes</button>
+                      <button onClick="{{r.later}}" class="btn ghost" style="min-height:44px;font-size:14px">10 min depois</button>
+                    </div>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-if>
+          </article>
+        </sc-for>
+        <sc-if value="{{empty}}" hint-placeholder-val="{{false}}">
+          <div style="padding:28px 12px;text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center">
+            <div style="font-size:18px;font-weight:600">Nenhuma saída marcada para lá</div>
+            <div style="font-size:14px;color:var(--mut);line-height:1.5">Quando alguém marcar essa rota, a gente te avisa.</div>
+            <button onClick="{{toggleAlert}}" aria-pressed="{{alertOn}}" class="btn {{alertCls}}" style="width:auto;padding:0 22px;min-height:48px;font-size:15px">{{alertLabel}}</button>
+          </div>
+        </sc-if>
+      </div>
+    </section>
+  </sc-if>
+</sc-if>
+
+<sc-if value="{{isTrips}}" hint-placeholder-val="{{false}}">
+  <div class="page noscroll">
+    <h1 class="h1">Viagens</h1>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <span class="lbl">Próximas</span>
+      <sc-for list="{{upcoming}}" as="u" hint-placeholder-count="1">
+        <div style="background:var(--s1);border:1px solid var(--line);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+            <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+              <span class="lbl" style="font-size:13px;color:{{accentText}}">{{u.kind}}</span>
+              <span style="font-size:17px;font-weight:600;line-height:1.3">{{u.title}}</span>
+              <span style="font-size:14px;color:var(--mut)">{{u.sub}}</span>
+            </div>
+            <span style="font-size:32px;font-weight:600;letter-spacing:-0.05em;line-height:1;font-variant-numeric:tabular-nums;flex:none">{{u.time}}</span>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button onClick="{{u.chat}}" class="btn inv" style="flex:1;min-height:48px;font-size:15px">{{u.chatLabel}}</button>
+            <button onClick="{{u.cancel}}" class="btn ghost" style="width:auto;padding:0 18px;min-height:48px;font-size:15px">Cancelar</button>
+          </div>
+        </div>
+      </sc-for>
+      <sc-if value="{{noUpcoming}}" hint-placeholder-val="{{true}}">
+        <div style="background:var(--s1);border:1px dashed var(--line);border-radius:20px;padding:20px;font-size:15px;color:var(--mut);line-height:1.5">Nenhuma carona marcada. Reserve uma carona marcada ou ofereça a sua.</div>
+      </sc-if>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <span class="lbl">Histórico</span>
+      <sc-if value="{{hasHistory}}" hint-placeholder-val="{{false}}">
+        <div class="list">
+          <sc-for list="{{history}}" as="h" hint-placeholder-count="2">
+            <div class="li" style="cursor:default;padding:12px 18px;min-height:72px">
+              <span style="display:flex;flex-direction:column;gap:2px;min-width:0"><span style="font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{h.title}}</span><span style="font-size:13px;color:var(--mut2)">{{h.sub}}</span></span>
+              <span style="font-size:15px;font-weight:600;flex:none">{{h.price}}</span>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{noHistory}}" hint-placeholder-val="{{true}}">
+        <div style="font-size:15px;color:var(--mut);padding:4px">Suas caronas concluídas aparecem aqui.</div>
+      </sc-if>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{isOffer}}" hint-placeholder-val="{{false}}">
+  <div class="page noscroll">
+    <h1 class="h1">Oferecer carona</h1>
+    <sc-if value="{{offerLocked}}" hint-placeholder-val="{{true}}">
+      <div style="display:flex;flex-direction:column;gap:16px;background:var(--s1);border:1px solid var(--line);border-radius:24px;padding:22px">
+        <span style="width:48px;height:48px;border-radius:16px;background:{{accent}};display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17h14M6 17l1.5-6h9L18 17M8 17v2M16 17v2"></path></svg></span>
+        <div style="font-size:20px;font-weight:700;letter-spacing:-0.03em">{{lockTitle}}</div>
+        <div style="font-size:15px;color:var(--mut);line-height:1.5">{{lockText}}</div>
+        <sc-if value="{{driverNone}}" hint-placeholder-val="{{true}}">
+          <button onClick="{{openDriver}}" class="btn acc">Cadastrar CNH e veículo</button>
+        </sc-if>
+      </div>
+    </sc-if>
+    <sc-if value="{{offerOpen}}" hint-placeholder-val="{{false}}">
+      <div style="display:flex;flex-direction:column;gap:14px;margin:0">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <label style="display:flex;flex-direction:column;gap:8px"><span class="lbl">Saindo de</span><input onKeyDown="{{publishOfferKey}}" value="{{ofq}}" onInput="{{setOfq}}" placeholder="Ex.: PUCPR" autocomplete="off" class="field" style="{{ofBorder}}"></label>
+          <sc-if value="{{showOfSug}}" hint-placeholder-val="{{false}}"><div class="list"><sc-for list="{{ofSug}}" as="o" hint-placeholder-count="3"><button onClick="{{o.pick}}" class="sug"><span style="font-size:15px">{{o.name}}</span><span style="font-size:12px;color:var(--mut2)">{{o.addr}}</span></button></sc-for></div></sc-if>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <label style="display:flex;flex-direction:column;gap:8px"><span class="lbl">Indo para</span><input onKeyDown="{{publishOfferKey}}" value="{{otq}}" onInput="{{setOtq}}" placeholder="Ex.: Centro Cívico" autocomplete="off" class="field" style="{{otBorder}}"></label>
+          <sc-if value="{{showOtSug}}" hint-placeholder-val="{{false}}"><div class="list"><sc-for list="{{otSug}}" as="o" hint-placeholder-count="3"><button onClick="{{o.pick}}" class="sug"><span style="font-size:15px">{{o.name}}</span><span style="font-size:12px;color:var(--mut2)">{{o.addr}}</span></button></sc-for></div></sc-if>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+          <label style="display:flex;flex-direction:column;gap:8px"><span class="lbl">Saída</span><input onKeyDown="{{publishOfferKey}}" value="{{oTime}}" onInput="{{setOTime}}" placeholder="17:50" inputmode="numeric" maxlength="5" class="field" style="min-width:0"></label>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <span class="lbl">Vagas</span>
+            <div style="display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);background:var(--s1);border-radius:16px;min-height:54px;padding:0 6px">
+              <button onClick="{{seatsDown}}" aria-label="Menos uma vaga" style="width:44px;height:44px;border:0;border-radius:12px;background:var(--s3);color:var(--fg);font-size:20px;cursor:pointer">−</button>
+              <span style="font-size:20px;font-weight:600;font-variant-numeric:tabular-nums">{{oSeats}}</span>
+              <button onClick="{{seatsUp}}" aria-label="Mais uma vaga" style="width:44px;height:44px;border:0;border-radius:12px;background:var(--s3);color:var(--fg);font-size:20px;cursor:pointer">+</button>
+            </div>
+          </div>
+        </div>
+        <sc-if value="{{offerHasRoute}}" hint-placeholder-val="{{false}}">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--s2);border-radius:18px;padding:16px">
+            <span style="display:flex;flex-direction:column;gap:2px"><span style="font-size:14px;color:var(--mut)">Você recebe por passageiro</span><span style="font-size:13px;color:var(--mut2)">{{offerTrip}}</span></span>
+            <span style="font-size:24px;font-weight:700;letter-spacing:-0.03em">{{offerGain}}</span>
+          </div>
+        </sc-if>
+        <sc-if value="{{hasError}}" hint-placeholder-val="{{false}}"><div role="alert" style="font-size:14px;color:var(--err)">{{error}}</div></sc-if>
+        <button onClick="{{publishOffer}}" class="{{offerBtn}}" style="margin-top:4px">Publicar carona</button>
+      </div>
+    </sc-if>
+  </div>
+</sc-if>
+
+<sc-if value="{{isProfile}}" hint-placeholder-val="{{false}}">
+  <div class="page noscroll">
+    <div style="display:flex;justify-content:flex-end;margin:-8px 0 -44px">
+      <button onClick="{{openSettings}}" aria-label="Configurações" class="icb"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg></button>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;padding-top:8px">
+      <label style="position:relative;cursor:pointer;border-radius:99px">
+        <span class="sr">Alterar foto de perfil</span>
+        <span style="width:104px;height:104px;border-radius:99px;overflow:hidden;background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:600;box-shadow:0 0 0 3px var(--bg),0 0 0 5px {{accent}}">
+          <sc-if value="{{hasPhoto}}" hint-placeholder-val="{{false}}"><img src="{{photo}}" alt="" style="width:100%;height:100%;object-fit:cover;display:block"></sc-if>
+          <sc-if value="{{noPhoto}}" hint-placeholder-val="{{true}}">{{initials}}</sc-if>
+        </span>
+        <span style="position:absolute;right:-2px;bottom:-2px;width:34px;height:34px;border-radius:99px;background:var(--fg);color:var(--bg);display:flex;align-items:center;justify-content:center;border:3px solid var(--bg)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg></span>
+        <input type="file" accept="image/*" onChange="{{setPhoto}}" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%">
+      </label>
+      <div style="font-size:28px;font-weight:700;letter-spacing:-0.04em;margin-top:4px">{{userName}}</div>
+      <sc-if value="{{hasBio}}" hint-placeholder-val="{{false}}"><div style="font-size:15px;color:var(--mut);line-height:1.45;max-width:300px">{{userBio}}</div></sc-if>
+      <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:8px">
+        <sc-for list="{{userTags}}" as="t" hint-placeholder-count="3"><span style="font-size:13px;font-weight:500;border:1px solid var(--line);border-radius:99px;padding:7px 12px;background:var(--s1)">{{t.label}}</span></sc-for>
+      </div>
+    </div>
+
+
+    <button onClick="{{openDriver}}" style="{{driverCardStyle}}">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17h14M6 17l1.5-6h9L18 17M8 17v2M16 17v2"></path></svg>
+      <span style="flex:1;display:flex;flex-direction:column;gap:2px;text-align:left"><span style="font-size:16px;font-weight:700">{{driverCardTitle}}</span><span style="font-size:13px;font-weight:500;opacity:0.85">{{driverCardSub}}</span></span>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+    </button>
+
+    <div class="list">
+      <button onClick="{{openEdit}}" class="li"><span>Editar perfil</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true" style="color:var(--mut2)"><path d="M9 6l6 6-6 6"></path></svg></button>
+      <button onClick="{{goTrips}}" class="li"><span>Minhas viagens</span><span style="font-size:13px;color:var(--mut2)">{{tripsSummary}}</span></button>
+      <button onClick="{{openVerify}}" class="li"><span>E-mail da faculdade</span><span style="font-size:13px;color:{{accentText}};font-weight:600">Verificado</span></button>
+      <button onClick="{{toggleTheme}}" class="li"><span>Aparência</span><span style="font-size:13px;color:var(--mut2)">{{themeLabel}}</span></button>
+      <button onClick="{{openSettings}}" class="li"><span>Configurações</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true" style="color:var(--mut2)"><path d="M9 6l6 6-6 6"></path></svg></button>
+    </div>
+  </div>
+</sc-if>
+
+<nav aria-label="Navegação principal" style="position:absolute;left:0;right:0;bottom:0;height:84px">
+  <div class="tabbar" style="{{tabBarStyle}}"></div>
+  <div class="bubble" aria-hidden="true" style="{{bubbleStyle}}">
+    <span class="{{blobClass}}" style="width:56px;height:56px;border-radius:99px;background:{{accent}};display:flex;align-items:center;justify-content:center;box-shadow:0 6px 14px -6px rgba(0,0,0,0.45)">
+      <sc-for list="{{activeIcons}}" as="ai" hint-placeholder-count="1">
+        <svg class="bicon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="{{ai.icon}}"></path></svg>
+      </sc-for>
+    </span>
+  </div>
+  <div style="position:absolute;inset:0;display:flex">
+    <sc-for list="{{tabs}}" as="t" hint-placeholder-count="4">
+      <button onClick="{{t.pick}}" aria-current="{{t.current}}" aria-label="{{t.label}}" class="tabbtn" style="{{t.style}}">
+        <span class="tabicon" style="{{t.iconStyle}}">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{t.icon}}"></path></svg>
+        </span>
+        <span style="{{t.labelStyle}}">{{t.label}}</span>
+        <sc-if value="{{t.dot}}" hint-placeholder-val="{{false}}"><span style="position:absolute;top:14px;margin-left:22px;width:8px;height:8px;border-radius:99px;background:{{accent}}"></span></sc-if>
+      </button>
+    </sc-for>
+  </div>
+</nav>
+
+<sc-if value="{{isSub}}" hint-placeholder-val="{{false}}">
+  <div class="slide" style="position:absolute;inset:0;background:var(--bg);display:flex;flex-direction:column;z-index:5">
+    <div style="display:flex;align-items:center;gap:12px;padding:52px 16px 12px;border-bottom:1px solid var(--line)">
+      <button onClick="{{closeSub}}" aria-label="Voltar" class="icb"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"></path></svg></button>
+      <sc-if value="{{isChat}}" hint-placeholder-val="{{false}}">
+        <span style="width:40px;height:40px;border-radius:99px;background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;flex:none">{{chatInitials}}</span>
+      </sc-if>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+        <span style="font-size:18px;font-weight:700;letter-spacing:-0.02em">{{subTitle}}</span>
+        <sc-if value="{{hasSubSub}}" hint-placeholder-val="{{false}}"><span style="font-size:13px;color:var(--mut2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{subSub}}</span></sc-if>
+      </div>
+    </div>
+
+    <sc-if value="{{isChat}}" hint-placeholder-val="{{false}}">
+      <div class="noscroll" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;justify-content:flex-end">
+        <div style="align-self:center;font-size:12px;color:var(--mut2);background:var(--s2);border-radius:99px;padding:6px 12px;margin-bottom:6px">{{chatContext}}</div>
+        <sc-for list="{{chatMsgs}}" as="m" hint-placeholder-count="2"><div style="{{m.style}}">{{m.text}}</div></sc-for>
+        <sc-if value="{{typing}}" hint-placeholder-val="{{false}}"><div style="align-self:flex-start;font-size:13px;color:var(--mut2);padding:4px 6px">digitando…</div></sc-if>
+      </div>
+      <div class="noscroll" style="display:flex;gap:8px;overflow-x:auto;padding:0 16px 10px">
+        <sc-for list="{{quick}}" as="q" hint-placeholder-count="3"><button onClick="{{q.send}}" class="chip">{{q.text}}</button></sc-for>
+      </div>
+      <div style="display:flex;gap:8px;padding:10px 16px 28px;border-top:1px solid var(--line);margin:0">
+        <label style="flex:1;display:flex"><span class="sr">Mensagem</span><input onKeyDown="{{sendChatKey}}" value="{{draft}}" onInput="{{setDraft}}" placeholder="Escreva uma mensagem" autocomplete="off" class="field" style="border-radius:99px;min-height:50px"></label>
+        <button onClick="{{sendChat}}" aria-label="Enviar" style="width:50px;height:50px;border-radius:99px;border:0;background:{{accent}};color:#FFFFFF;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isEdit}}" hint-placeholder-val="{{false}}">
+      <div class="noscroll" style="flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px;margin:0">
+        <label style="display:flex;flex-direction:column;gap:8px"><span class="lbl">Nome completo</span><input onKeyDown="{{saveEditKey}}" value="{{dName}}" onInput="{{setDName}}" class="field"></label>
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+          <label style="display:flex;flex-direction:column;gap:8px"><span class="lbl">Nascimento</span><input value="{{dBirth}}" onInput="{{setDBirth}}" onKeyDown="{{saveEditKey}}" inputmode="numeric" maxlength="10" placeholder="DD/MM/AAAA" class="field" style="min-width:0"></label>
+          <label style="display:flex;flex-direction:column;gap:8px"><span class="lbl">Celular</span><input value="{{dPhone}}" onInput="{{setDPhone}}" onKeyDown="{{saveEditKey}}" inputmode="tel" maxlength="15" placeholder="(41) 99999-0000" class="field" style="min-width:0"></label>
+        </div>
+        <label style="display:flex;flex-direction:column;gap:8px"><span class="lbl">CPF</span><input value="{{dCpf}}" onInput="{{setDCpf}}" onKeyDown="{{saveEditKey}}" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" class="field"></label>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <label style="display:flex;flex-direction:column;gap:8px"><span class="lbl">Curso</span><input onKeyDown="{{saveEditKey}}" value="{{cq}}" onInput="{{setCq}}" autocomplete="off" class="field" style="{{courseBorder}}"></label>
+          <sc-if value="{{showCourseSug}}" hint-placeholder-val="{{false}}"><div class="list"><sc-for list="{{courseSug}}" as="c" hint-placeholder-count="3"><button onClick="{{c.pick}}" class="sug"><span style="font-size:16px">{{c.name}}</span></button></sc-for></div></sc-if>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <span class="lbl">Turno</span>
+          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px"><sc-for list="{{shifts}}" as="t" hint-placeholder-count="3"><button onClick="{{t.pick}}" aria-pressed="{{t.on}}" class="chip {{t.cls}}" style="min-height:48px">{{t.label}}</button></sc-for></div>
+        </div>
+        <label style="display:flex;flex-direction:column;gap:8px"><span class="lbl">Período</span><input value="{{dPeriod}}" onInput="{{setDPeriod}}" inputmode="numeric" maxlength="2" placeholder="Em que período você está? Ex.: 3" class="field"></label>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <span class="lbl">Gênero (opcional)</span>
+          <div style="display:flex;flex-wrap:wrap;gap:8px"><sc-for list="{{genders}}" as="g" hint-placeholder-count="3"><button onClick="{{g.pick}}" aria-pressed="{{g.on}}" class="chip {{g.cls}}" style="min-height:44px">{{g.label}}</button></sc-for></div>
+          <span style="font-size:12px;color:var(--mut2);line-height:1.4">Usado só para a opção de carona entre mulheres, se você quiser.</span>
+        </div>
+        <label style="display:flex;flex-direction:column;gap:8px"><span class="lbl">Sobre você</span><textarea value="{{dBio}}" onInput="{{setDBio}}" maxlength="140" rows="3" placeholder="Ex.: Saio do Água Verde todo dia às 7h. Curto rock no carro." class="field" style="padding:14px 16px;resize:none;line-height:1.45"></textarea><span style="font-size:12px;color:var(--mut2);text-align:right">{{bioCount}}/140</span></label>
+        <sc-if value="{{hasError}}" hint-placeholder-val="{{false}}"><div role="alert" style="font-size:14px;color:var(--err)">{{error}}</div></sc-if>
+        <div style="flex:1"></div>
+        <button onClick="{{saveEdit}}" class="btn inv">Salvar</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isSettings}}" hint-placeholder-val="{{false}}">
+      <div class="noscroll" style="flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:22px">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <span class="lbl">Aparência</span>
+          <div role="radiogroup" aria-label="Aparência" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
+            <sc-for list="{{themes}}" as="th" hint-placeholder-count="2"><button role="radio" aria-checked="{{th.on}}" onClick="{{th.pick}}" class="chip {{th.cls}}" style="min-height:52px">{{th.label}}</button></sc-for>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <span class="lbl">Preferências</span>
+          <div class="list">
+            <sc-for list="{{prefs}}" as="pf" hint-placeholder-count="3">
+              <div class="li" style="cursor:default;padding:12px 18px;min-height:68px">
+                <span style="display:flex;flex-direction:column;gap:2px"><span style="font-size:15px">{{pf.label}}</span><span style="font-size:13px;color:var(--mut2)">{{pf.sub}}</span></span>
+                <button role="switch" aria-checked="{{pf.on}}" aria-label="{{pf.label}}" onClick="{{pf.toggle}}" class="toggle {{pf.cls}}"><span></span></button>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <span class="lbl">Conta</span>
+          <div class="list">
+            <button onClick="{{openEdit}}" class="li"><span>Dados pessoais</span><span style="font-size:13px;color:var(--mut2)">Nome, curso e turno</span></button>
+            <button onClick="{{openVerify}}" class="li"><span>E-mail da faculdade</span><span style="font-size:13px;color:{{accentText}};font-weight:600">Verificado</span></button>
+            <button onClick="{{openDriver}}" class="li"><span>Motorista e veículo</span><span style="font-size:13px;color:var(--mut2)">{{driverShort}}</span></button>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <span class="lbl">Segurança</span>
+          <div class="list">
+            <div class="li" style="cursor:default;padding:12px 18px;min-height:68px"><span style="display:flex;flex-direction:column;gap:2px"><span>Contato de confiança</span><span style="font-size:13px;color:var(--mut2)">{{trustedLabel}}</span></span><button onClick="{{editTrusted}}" style="border:0;background:transparent;color:{{accentText}};font-size:14px;font-weight:600;min-height:44px;cursor:pointer">{{trustedBtn}}</button></div>
+            <sc-if value="{{editingTrusted}}" hint-placeholder-val="{{false}}">
+              <div style="display:flex;gap:8px;padding:12px 18px;border-bottom:1px solid var(--line)"><label style="flex:1;display:flex"><span class="sr">Telefone do contato</span><input value="{{trustedDraft}}" onInput="{{setTrustedDraft}}" onKeyDown="{{saveTrustedKey}}" inputmode="tel" placeholder="(41) 99999-0000" class="field" style="min-height:48px"></label><button onClick="{{saveTrusted}}" class="btn inv" style="width:auto;min-height:48px;padding:0 16px;font-size:15px">Salvar</button></div>
+            </sc-if>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <span class="lbl">Sobre</span>
+          <div class="list">
+            <button onClick="{{showHelp}}" class="li"><span>Ajuda e suporte</span></button>
+            <button onClick="{{showTerms}}" class="li"><span>Termos e privacidade</span></button>
+            <div class="li" style="cursor:default"><span>Versão</span><span style="font-size:13px;color:var(--mut2)">Protótipo 0.4</span></div>
+          </div>
+        </div>
+        <div style="flex:1"></div>
+        <button onClick="{{logout}}" class="btn ghost" style="color:var(--err)">Sair da conta</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isVerify}}" hint-placeholder-val="{{false}}">
+      <div style="flex:1;padding:20px;display:flex;flex-direction:column;gap:16px">
+        <div style="display:flex;align-items:center;gap:14px;background:var(--s1);border:1px solid var(--line);border-radius:20px;padding:18px">
+          <span style="width:44px;height:44px;border-radius:99px;background:{{accent}};display:flex;align-items:center;justify-content:center;flex:none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg></span>
+          <span style="display:flex;flex-direction:column;gap:2px;min-width:0"><span style="font-size:16px;font-weight:600">Universitário verificado</span><span style="font-size:14px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{userEmail}}</span></span>
+        </div>
+        <div class="list">
+          <div class="li" style="cursor:default"><span>Faculdade</span><span style="font-size:14px;color:var(--mut)">{{uniName2}}</span></div>
+          <div class="li" style="cursor:default"><span>Verificado em</span><span style="font-size:14px;color:var(--mut)">{{verifiedAt}}</span></div>
+        </div>
+        <div style="font-size:14px;color:var(--mut);line-height:1.5">O selo aparece no seu perfil para motoristas e passageiros. Se você trocar de faculdade, confirme o novo e-mail.</div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isDriver}}" hint-placeholder-val="{{false}}">
+      <sc-if value="{{driverFormOpen}}" hint-placeholder-val="{{true}}">
+        <div class="noscroll" style="flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:14px;margin:0">
+          <div style="font-size:15px;color:var(--mut);line-height:1.5">Conferimos a CNH e o veículo antes de liberar suas caronas.</div>
+          <label style="display:flex;flex-direction:column;gap:8px"><span class="lbl">Número da CNH</span><input onKeyDown="{{submitDriverKey}}" value="{{dvCnh}}" onInput="{{setDvCnh}}" inputmode="numeric" maxlength="11" placeholder="11 dígitos" class="field"></label>
+          <label style="display:flex;flex-direction:column;gap:8px"><span class="lbl">Validade</span><input onKeyDown="{{submitDriverKey}}" value="{{dvVal}}" onInput="{{setDvVal}}" inputmode="numeric" maxlength="7" placeholder="MM/AAAA" class="field"></label>
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+            <label style="display:flex;flex-direction:column;gap:8px"><span class="lbl">Placa</span><input onKeyDown="{{submitDriverKey}}" value="{{dvPlate}}" onInput="{{setDvPlate}}" maxlength="8" placeholder="ABC1D23" class="field" style="text-transform:uppercase;min-width:0"></label>
+            <label style="display:flex;flex-direction:column;gap:8px"><span class="lbl">Cor</span><input onKeyDown="{{submitDriverKey}}" value="{{dvColor}}" onInput="{{setDvColor}}" placeholder="Prata" class="field" style="min-width:0"></label>
+          </div>
+          <label style="display:flex;flex-direction:column;gap:8px"><span class="lbl">Modelo</span><input onKeyDown="{{submitDriverKey}}" value="{{dvModel}}" onInput="{{setDvModel}}" placeholder="Ex.: Gol 2019" class="field"></label>
+          <label style="display:flex;align-items:center;gap:12px;background:var(--s1);border:1px dashed var(--line);border-radius:16px;min-height:64px;padding:0 16px;cursor:pointer;position:relative">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M7 10h4M7 14h7M16 10h1"></path></svg>
+            <span style="flex:1;font-size:15px">{{cnhPhotoLabel}}</span>
+            <input type="file" accept="image/*" onChange="{{setCnhPhoto}}" style="position:absolute;inset:0;opacity:0;cursor:pointer">
+          </label>
+          <sc-if value="{{hasError}}" hint-placeholder-val="{{false}}"><div role="alert" style="font-size:14px;color:var(--err)">{{error}}</div></sc-if>
+          <div style="flex:1"></div>
+          <button onClick="{{submitDriver}}" class="btn acc">Enviar para análise</button>
+        </div>
+      </sc-if>
+      <sc-if value="{{driverStatusOpen}}" hint-placeholder-val="{{false}}">
+        <div style="flex:1;padding:20px;display:flex;flex-direction:column;gap:16px">
+          <div style="display:flex;flex-direction:column;gap:12px;background:var(--s1);border:1px solid var(--line);border-radius:22px;padding:20px">
+            <span class="lbl" style="color:{{accentText}}">{{dvStatusKicker}}</span>
+            <span style="font-size:22px;font-weight:700;letter-spacing:-0.03em">{{dvStatusTitle}}</span>
+            <span style="font-size:15px;color:var(--mut);line-height:1.5">{{dvStatusText}}</span>
+            <sc-if value="{{dvReview}}" hint-placeholder-val="{{false}}"><div class="scan" style="height:4px;border-radius:99px;background:{{accent}}"></div></sc-if>
+          </div>
+          <div class="list">
+            <div class="li" style="cursor:default"><span>Veículo</span><span style="font-size:14px;color:var(--mut)">{{dvCar}}</span></div>
+            <div class="li" style="cursor:default"><span>Placa</span><span style="font-family:'Geist Mono',monospace;font-size:13px;background:var(--fg);color:var(--bg);border-radius:6px;padding:3px 7px">{{dvPlateShow}}</span></div>
+          </div>
+          <sc-if value="{{dvApproved}}" hint-placeholder-val="{{false}}"><button onClick="{{goOffer}}" class="btn inv">Oferecer uma carona</button></sc-if>
+        </div>
+      </sc-if>
+    </sc-if>
+  </div>
+</sc-if>
+
+
+</sc-if>
+
+<sc-if value="{{hasToast}}" hint-placeholder-val="{{false}}">
+  <div role="status" class="rise" style="position:absolute;left:16px;right:16px;top:52px;z-index:9;background:var(--fg);color:var(--bg);border-radius:16px;padding:14px 16px;font-size:15px;font-weight:600;box-shadow:0 20px 40px -10px var(--shadow)">{{toast}}</div>
+</sc-if>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#2347E0","options":["#2347E0","#3D63F5","#FF5A1F","#C8FF3D"]},"theme":{"editor":"enum","options":["dark","light"],"default":"dark"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(p) {
+    super(p);
+    this.state = {
+      screen: 'welcome', email: '', code: '', resent: false, error: '',
+      user: null, dName: '', cq: '', cSel: '', dShift: '', dBio: '', dBirth: '', dCpf: '', dPhone: '', dPeriod: '', dGender: '', pay: '',
+      theme: null, photo: '', tab: 'feed', sub: null, chatWith: null, chats: {}, draft: '', typing: false,
+      origin: null, home: null, picking: 'dest', query: '',
+      step: 'where', dest: null, mode: 'now', sel: null, prog: 0, share: false, stars: 0,
+      booked: {}, suggest: {}, alert: {}, history: [], myOffers: [],
+      driver: { status: 'none' }, dv: { cnh: '', val: '', plate: '', color: '', model: '', photo: false },
+      ofq: '', of: null, otq: '', ot: null, oTime: '', oSeats: 3,
+      prefs: { notif: true, autoshare: false, showCourse: true },
+      toast: ''
+    };
+  }
+  componentWillUnmount() { this.stop(); clearTimeout(this.toastT); clearTimeout(this.replyT); clearTimeout(this.dvT); }
+  stop() { if (this.timer) { clearInterval(this.timer); clearTimeout(this.timer); this.timer = null; } }
+  run(step, ms, next) {
+    this.stop();
+    this.setState({ step, prog: 0 });
+    let p = 0;
+    this.timer = setInterval(() => {
+      p = Math.min(1, p + 400 / ms);
+      this.setState({ prog: p });
+      if (p >= 1) { this.stop(); if (next) next(); }
+    }, 400);
+  }
+  say(text) {
+    clearTimeout(this.toastT);
+    this.setState({ toast: text });
+    this.toastT = setTimeout(() => this.setState({ toast: '' }), 2600);
+  }
+  prevent(e) { if (e && e.preventDefault) e.preventDefault(); }
+
+  renderVals() {
+    const s = this.state;
+    const accent = this.props.accent ?? '#2347E0';
+    const theme = s.theme || this.props.theme || 'dark';
+    const light = theme === 'light';
+    const hex = accent.replace('#', '');
+    const nn = parseInt(hex.length === 3 ? hex.split('').map((c) => c + c).join('') : hex, 16);
+    const ar = (nn >> 16) & 255, ag = (nn >> 8) & 255, ab = nn & 255;
+    const mix = (t, to) => 'rgb(' + Math.round(ar + (to - ar) * t) + ',' + Math.round(ag + (to - ag) * t) + ',' + Math.round(ab + (to - ab) * t) + ')';
+    const accentText = light ? mix(0.25, 0) : mix(0.45, 255);
+    const accentDeep = 'rgb(' + Math.round(ar * 0.45) + ',' + Math.round(ag * 0.45) + ',' + Math.round(ab * 0.45) + ')';
+    const accentGlow = 'rgba(' + ar + ',' + ag + ',' + ab + ',' + (light ? '0.28' : '0.5') + ')';
+    const T = light ? {
+      bg: '#F4F4F2', s1: '#FFFFFF', s2: '#EDEDEA', s3: '#E2E2DE', line: '#DADAD5', fg: '#0A0A0B', mut: '#4E4E53', mut2: '#66666B',
+      glass: 'rgba(255,255,255,0.94)', shadow: 'rgba(0,0,0,0.18)', err: '#B3261E',
+      mapbg: '#E8E8E4', road: '#FFFFFF', road2: '#F6F6F3', park: '#D6E3D2', water: '#BCD0EA', label: '#77777D'
+    } : {
+      bg: '#141416', s1: '#1C1C1F', s2: '#222226', s3: '#2A2A2F', line: '#2F2F35', fg: '#E8E8E3', mut: '#A6A6AB', mut2: '#8F8F96',
+      glass: 'rgba(28,28,31,0.92)', shadow: 'rgba(0,0,0,0.55)', err: '#FF9F8A',
+      mapbg: '#18181B', road: '#2C2C32', road2: '#202025', park: '#1A231D', water: '#1D2B40', label: '#7D7D85'
+    };
+    const rootStyle = '--accent:' + accent + ';--bg:' + T.bg + ';--s1:' + T.s1 + ';--s2:' + T.s2 + ';--s3:' + T.s3 + ';--line:' + T.line + ';--fg:' + T.fg + ';--mut:' + T.mut + ';--mut2:' + T.mut2 + ';--glass:' + T.glass + ';--shadow:' + T.shadow + ';--err:' + T.err + ';--map-bg:' + T.mapbg + ';--map-road:' + T.road + ';--map-road2:' + T.road2 + ';--map-park:' + T.park + ';--map-water:' + T.water + ';--map-label:' + T.label +
+      ';width:390px;height:844px;box-sizing:border-box;background:var(--bg);color:var(--fg);font-family:Geist,sans-serif;position:relative;overflow:hidden;transition:background .3s ease,color .3s ease';
+
+    const CAMPUS = 'M3 9l9-5 9 5-9 5-9-5zM7 11.5V16c0 1.5 2.2 3 5 3s5-1.5 5-3v-4.5';
+    const PIN = 'M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21zM12 12a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z';
+    const SHOP = 'M5 8h14l-1 12H6zM9 8V6a3 3 0 0 1 6 0v2';
+    const CLOCK = 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7v5l3 2';
+    const HOME = 'M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z';
+
+    // Lugares com os nomes que aparecem no Google Maps. No app, vêm da busca de lugares (backend).
+    const P = {
+      prado: { n: 'PUCPR - Pontifícia Universidade Católica do Paraná', short: 'PUCPR', addr: 'R. Imaculada Conceição, 1155 - Prado Velho', x: 300, y: 400, k: 'c', al: 'puc pucpr catolica pontificia' },
+      poli: { n: 'UFPR - Centro Politécnico', short: 'UFPR Politécnico', addr: 'Av. Cel. Francisco H. dos Santos, 100 - Jardim das Américas', x: 300, y: 290, k: 'c', al: 'ufpr federal politecnico' },
+      ufprc: { n: 'UFPR - Prédio Histórico (Praça Santos Andrade)', short: 'UFPR Santos Andrade', addr: 'Praça Santos Andrade, 50 - Centro', x: 215, y: 250, k: 'c', al: 'ufpr federal reitoria santos andrade historico' },
+      utf: { n: 'UTFPR - Câmpus Curitiba, Sede Centro', short: 'UTFPR Centro', addr: 'Av. Sete de Setembro, 3165 - Rebouças', x: 250, y: 260, k: 'c', al: 'utfpr tecnologica federal cefet' },
+      eco: { n: 'Universidade Positivo - Campus Ecoville', short: 'Positivo Ecoville', addr: 'R. Prof. Pedro Viriato Parigot de Souza, 5300 - Campo Comprido', x: 40, y: 230, k: 'c', al: 'up positivo universidade ecoville' },
+      fae: { n: 'FAE Centro Universitário', short: 'FAE Centro', addr: 'R. 24 de Maio, 135 - Centro', x: 160, y: 260, k: 'c', al: 'fae' },
+      patio: { n: 'Shopping Pátio Batel', short: 'Pátio Batel', addr: 'Av. do Batel, 1868 - Batel', x: 120, y: 300, k: 's', al: 'shopping patio batel' },
+      estacao: { n: 'Shopping Estação', short: 'Shopping Estação', addr: 'Av. Sete de Setembro, 2775 - Rebouças', x: 240, y: 300, k: 's', al: 'shopping estacao' },
+      rodo: { n: 'Rodoferroviária de Curitiba', short: 'Rodoferroviária', addr: 'Av. Pres. Affonso Camargo, 330 - Jardim Botânico', x: 270, y: 240, k: 'p', al: 'rodoviaria rodoferroviaria onibus' },
+      jb: { n: 'Jardim Botânico de Curitiba', short: 'Jardim Botânico', addr: 'R. Eng. Ostoja Roguski - Jardim Botânico', x: 290, y: 330, k: 'p', al: 'jardim botanico estufa' },
+      batel: { n: 'Batel', short: 'Batel', addr: 'Curitiba - PR', x: 110, y: 315, k: 'b', al: 'batel' },
+      agua: { n: 'Água Verde', short: 'Água Verde', addr: 'Curitiba - PR', x: 140, y: 430, k: 'b', al: 'agua verde' },
+      portao: { n: 'Portão', short: 'Portão', addr: 'Curitiba - PR', x: 70, y: 500, k: 'b', al: 'portao' },
+      centro: { n: 'Centro', short: 'Centro', addr: 'Curitiba - PR', x: 205, y: 260, k: 'b', al: 'centro' },
+      civico: { n: 'Centro Cívico', short: 'Centro Cívico', addr: 'Curitiba - PR', x: 205, y: 160, k: 'b', al: 'centro civico' },
+      baca: { n: 'Bacacheri', short: 'Bacacheri', addr: 'Curitiba - PR', x: 340, y: 160, k: 'b', al: 'bacacheri' }
+    };
+    const iconOf = (k) => (k === 'c' ? CAMPUS : k === 's' ? SHOP : PIN);
+    const UNIS = [
+      { d: 'ufpr.br', n: 'UFPR', campus: 'poli' },
+      { d: 'pucpr.edu.br', n: 'PUCPR', campus: 'prado' },
+      { d: 'utfpr.edu.br', n: 'UTFPR', campus: 'utf' },
+      { d: 'up.edu.br', n: 'Positivo', campus: 'eco' },
+      { d: 'fae.edu', n: 'FAE', campus: 'fae' }
+    ];
+    const findUni = (email) => {
+      const e = (email || '').trim().toLowerCase(); const at = e.lastIndexOf('@');
+      if (at < 1) return null;
+      const host = e.slice(at + 1);
+      return UNIS.find((x) => host === x.d || host.endsWith('.' + x.d)) || null;
+    };
+
+    // Busca tolerante: ignora acento, aceita pedaços e 1 letra errada.
+    const norm = (t) => (t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+    const lev1 = (a, b) => {
+      if (Math.abs(a.length - b.length) > 1) return false;
+      let i = 0, j = 0, d = 0;
+      while (i < a.length && j < b.length) {
+        if (a[i] === b[j]) { i++; j++; continue; }
+        if (++d > 1) return false;
+        if (a.length > b.length) i++; else if (b.length > a.length) j++; else { i++; j++; }
+      }
+      return d + (a.length - i) + (b.length - j) <= 1;
+    };
+    const searchPlaces = (q, exclude) => {
+      const qt = norm(q).split(' ').filter(Boolean);
+      if (!qt.length) return [];
+      const out = [];
+      Object.keys(P).forEach((key) => {
+        if (exclude && exclude.indexOf(key) >= 0) return;
+        const words = norm(P[key].n + ' ' + P[key].addr + ' ' + P[key].al).split(' ');
+        let score = 0;
+        for (const t of qt) {
+          let best = 0;
+          for (const w of words) {
+            if (w === t) best = Math.max(best, 4);
+            else if (w.startsWith(t)) best = Math.max(best, 3);
+            else if (t.length >= 3 && w.includes(t)) best = Math.max(best, 2);
+            else if (t.length >= 4 && (lev1(t, w) || lev1(t, w.slice(0, t.length)))) best = Math.max(best, 1);
+          }
+          if (!best) return;
+          score += best;
+        }
+        if (P[key].k === 'c') score += 0.5;
+        out.push({ key, score });
+      });
+      return out.sort((a, b) => b.score - a.score).slice(0, 6).map((o) => o.key);
+    };
+
+    // Preço (o mesmo cálculo vai para o C#): base + km + minuto, mais a taxa do UniCar.
+    const BASE = 2.0, PER_KM = 0.90, PER_MIN = 0.12, FEE = 0.15, MIN_PRICE = 7, SCHED = 0.9;
+    const round50 = (v) => Math.round(v * 2) / 2;
+    const priceNow = (km, mins) => Math.max(MIN_PRICE, round50((BASE + km * PER_KM + mins * PER_MIN) * (1 + FEE)));
+    const priceSched = (km, mins) => Math.max(MIN_PRICE - 1, round50(priceNow(km, mins) * SCHED));
+    const dist = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+    const kmOf = (a, b) => dist(a, b) / 38;
+    const minOf = (km) => Math.round(km * 2.4 + 4);
+    const fmtKm = (km) => km.toFixed(1).replace('.', ',') + ' km';
+    const brl = (v) => 'R$ ' + v.toFixed(2).replace('.', ',');
+
+    const U = s.user;
+    const uni = U ? UNIS.find((x) => x.n === U.uni) : findUni(s.email);
+    const here = { n: 'Localização atual', short: 'Você', addr: 'Pelo GPS do celular', x: 110, y: 315 };
+    const origin = s.origin ? P[s.origin] : here;
+    const originLabel = s.origin ? P[s.origin].short : 'Você';
+    const D = s.dest ? P[s.dest] : (uni ? P[uni.campus] : P.prado);
+    const km = kmOf(origin, D);
+    const mins = minOf(km);
+
+    // ---------- entrada ----------
+    const COURSES = ['Administração', 'Agronomia', 'Arquitetura e Urbanismo', 'Biomedicina', 'Ciência da Computação', 'Ciências Contábeis', 'Design', 'Direito', 'Economia', 'Educação Física', 'Enfermagem', 'Engenharia Civil', 'Engenharia de Computação', 'Engenharia de Produção', 'Engenharia de Software', 'Engenharia Elétrica', 'Engenharia Mecânica', 'Engenharia Química', 'Farmácia', 'Fisioterapia', 'Jornalismo', 'Medicina', 'Medicina Veterinária', 'Nutrição', 'Odontologia', 'Pedagogia', 'Psicologia', 'Publicidade e Propaganda', 'Relações Internacionais', 'Sistemas de Informação'];
+    const cqN = norm(s.cq);
+    const courseMatches = !s.cSel && cqN ? COURSES.filter((c) => norm(c).includes(cqN) || norm(c).split(' ').some((w) => cqN.length >= 4 && lev1(cqN, w))).slice(0, 5) : [];
+    const courseSug = courseMatches.map((name) => ({ name, pick: () => this.setState({ cSel: name, cq: name, error: '' }) }));
+    const shifts = ['Manhã', 'Tarde', 'Noite'].map((label) => ({ label, on: s.dShift === label ? 'true' : 'false', cls: s.dShift === label ? 'on' : '', pick: () => this.setState({ dShift: label, error: '' }) }));
+    const nameOk = s.dName.trim().split(/\s+/).filter(Boolean).length >= 2;
+    const cpfValid = (v) => {
+      const d = (v || '').replace(/\D/g, '');
+      if (d.length !== 11 || /^(\d)\1{10}$/.test(d)) return false;
+      const calc = (len) => { let sum = 0; for (let i = 0; i < len; i++) sum += Number(d[i]) * (len + 1 - i); const r = (sum * 10) % 11; return r === 10 ? 0 : r; };
+      return calc(9) === Number(d[9]) && calc(10) === Number(d[10]);
+    };
+    const ageOf = (v) => {
+      const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(v || ''); if (!m) return -1;
+      const b = new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]));
+      if (b.getDate() !== Number(m[1]) || b.getMonth() !== Number(m[2]) - 1) return -1;
+      const now = new Date(); let a = now.getFullYear() - b.getFullYear();
+      if (now.getMonth() < b.getMonth() || (now.getMonth() === b.getMonth() && now.getDate() < b.getDate())) a--;
+      return a;
+    };
+    const age = ageOf(s.dBirth);
+    const phoneOk = (s.dPhone || '').replace(/\D/g, '').length === 11;
+    const periodN = Number(s.dPeriod);
+    const periodOk = periodN >= 1 && periodN <= 12;
+    const signupOk = nameOk && age >= 18 && age < 100 && cpfValid(s.dCpf) && phoneOk && s.cSel && periodOk && s.dShift;
+    const missing = () => {
+      if (!nameOk) return 'Escreva nome e sobrenome.';
+      if (age < 0 || age >= 100) return 'Data de nascimento no formato DD/MM/AAAA.';
+      if (age < 18) return 'O UniCar é para maiores de 18 anos.';
+      if (!phoneOk) return 'Celular com DDD, 11 números.';
+      if (!cpfValid(s.dCpf)) return 'CPF inválido. Confira os números.';
+      if (!s.cSel) return 'Escolha um curso da lista.';
+      if (!periodOk) return 'Período entre 1 e 12.';
+      if (!s.dShift) return 'Escolha o turno.';
+      return '';
+    };
+    const mask = (v, pattern) => { const d = v.replace(/\D/g, ''); let out = '', j = 0; for (const ch of pattern) { if (j >= d.length) break; if (ch === '9') out += d[j++]; else out += ch; } return out; };
+    const codeClean = (s.code || '').replace(/\D/g, '').slice(0, 6);
+    const authOrder = ['email', 'code', 'signup'];
+    const aIdx = authOrder.indexOf(s.screen);
+    const digits = [0, 1, 2, 3, 4, 5].map((i) => {
+      const ch = codeClean[i] || ''; const active = i === codeClean.length;
+      return { ch, style: 'display:flex;align-items:center;justify-content:center;border-radius:14px;background:var(--s1);font-size:28px;font-weight:600;font-variant-numeric:tabular-nums;border:1.5px solid ' + (active ? accent : 'var(--line)') };
+    });
+
+    const displayName = U ? U.name : s.dName.trim();
+    const first = (displayName.split(' ')[0]) || 'universitário';
+    const initials = displayName.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join('') || 'U';
+    const userTags = (U ? [s.prefs.showCourse ? U.course : '', U.period ? U.period + 'º período' : '', U.uni, U.shift] : [s.cSel, periodOk ? periodN + 'º período' : '', uni ? uni.n : '', s.dShift]).filter(Boolean).map((label) => ({ label }));
+
+    // ---------- mapa e corrida ----------
+    const mid = Math.round((origin.y + D.y) / 2);
+    const route = [{ x: origin.x, y: origin.y }, { x: origin.x, y: mid }, { x: D.x, y: mid }, { x: D.x, y: D.y }];
+    const toD = (pts) => {
+      const r0 = 14; let d = 'M' + Math.round(pts[0].x) + ' ' + Math.round(pts[0].y);
+      for (let i = 1; i < pts.length; i++) {
+        const p = pts[i], prev = pts[i - 1], next = pts[i + 1];
+        if (!next) { d += ' L' + Math.round(p.x) + ' ' + Math.round(p.y); break; }
+        const l1 = Math.hypot(p.x - prev.x, p.y - prev.y), l2 = Math.hypot(next.x - p.x, next.y - p.y);
+        const r = Math.min(r0, l1 / 2, l2 / 2);
+        if (r < 1) { d += ' L' + Math.round(p.x) + ' ' + Math.round(p.y); continue; }
+        const ax = p.x - (p.x - prev.x) / l1 * r, ay = p.y - (p.y - prev.y) / l1 * r;
+        const bx = p.x + (next.x - p.x) / l2 * r, by = p.y + (next.y - p.y) / l2 * r;
+        d += ' L' + ax.toFixed(1) + ' ' + ay.toFixed(1) + ' Q' + p.x + ' ' + p.y + ' ' + bx.toFixed(1) + ' ' + by.toFixed(1);
+      }
+      return d;
+    };
+    const along = (pts, t) => {
+      const segs = []; let total = 0;
+      for (let i = 1; i < pts.length; i++) { const l = Math.abs(pts[i].x - pts[i - 1].x) + Math.abs(pts[i].y - pts[i - 1].y); segs.push(l); total += l; }
+      let left = t * total;
+      for (let i = 0; i < segs.length; i++) {
+        if (left <= segs[i] || i === segs.length - 1) { const f = segs[i] ? Math.min(1, left / segs[i]) : 0; return { x: pts[i].x + (pts[i + 1].x - pts[i].x) * f, y: pts[i].y + (pts[i + 1].y - pts[i].y) * f }; }
+        left -= segs[i];
+      }
+      return pts[pts.length - 1];
+    };
+
+    const RIDES = [
+      { id: 1, driver: 'Marina Souza', course: 'Arquitetura', uni: 'UFPR', car: 'Gol prata', time: '07:10', a: 'batel', b: 'poli', seats: 2, rating: '4,9' },
+      { id: 2, driver: 'Thiago Lima', course: 'Eng. Mecânica', uni: 'UFPR', car: 'Sandero preto', time: '13:20', a: 'agua', b: 'poli', seats: 3, rating: '4,7' },
+      { id: 3, driver: 'Camila Oliveira', course: 'Medicina', uni: 'PUCPR', car: 'Onix preto', time: '07:45', a: 'portao', b: 'prado', seats: 3, rating: '5,0' },
+      { id: 4, driver: 'Gustavo Reis', course: 'Direito', uni: 'PUCPR', car: 'Fox vermelho', time: '18:05', a: 'eco', b: 'prado', seats: 1, rating: '4,8' },
+      { id: 5, driver: 'Beatriz Alves', course: 'Psicologia', uni: 'PUCPR', car: 'Kwid laranja', time: '17:50', a: 'prado', b: 'civico', seats: 1, rating: '4,9' },
+      { id: 6, driver: 'Lucas Martins', course: 'Design', uni: 'Positivo', car: 'Argo cinza', time: '12:15', a: 'centro', b: 'eco', seats: 2, rating: '4,7' },
+      { id: 7, driver: 'Rafael Tavares', course: 'Eng. Civil', uni: 'UTFPR', car: 'HB20 branco', time: '07:30', a: 'agua', b: 'utf', seats: 1, rating: '4,8' },
+      { id: 8, driver: 'Pedro Henrique', course: 'Computação', uni: 'UFPR', car: 'Polo azul', time: '18:20', a: 'poli', b: 'baca', seats: 3, rating: '4,8' },
+      { id: 9, driver: 'Júlia Fernandes', course: 'Administração', uni: 'FAE', car: 'Mobi branco', time: '18:40', a: 'batel', b: 'fae', seats: 2, rating: '4,6' },
+      { id: 10, driver: 'Bruno Costa', course: 'Odontologia', uni: 'PUCPR', car: 'Corolla preto', time: '07:20', a: 'agua', b: 'prado', seats: 2, rating: '4,9' }
+    ];
+    const sched = RIDES.filter((r) => r.b === s.dest);
+    const selRide = sched.find((r) => r.id === s.sel) || null;
+    const nowTotal = priceNow(km, mins);
+    const schedTotal = priceSched(km, mins);
+
+    const start = { x: Math.max(30, origin.x - 70), y: Math.min(560, origin.y + 150) };
+    const driverPath = [start, { x: start.x, y: origin.y }, { x: origin.x, y: origin.y }];
+    let car = { x: -100, y: -100 }, meP = { x: origin.x, y: origin.y }, driverD = 'M0 0';
+    if (s.step === 'matched') {
+      car = along(driverPath, s.prog);
+      driverD = toD([car].concat(driverPath.slice(car.y > origin.y + 1 ? 1 : 2)));
+    } else if (s.step === 'riding' || s.step === 'arrived') {
+      car = along(route, s.step === 'arrived' ? 1 : s.prog); meP = car;
+    } else if (s.step === 'scheduled' && selRide) {
+      const A = P[selRide.a]; car = { x: A.x, y: A.y };
+      driverD = toD([A, { x: origin.x, y: A.y }, origin]);
+    }
+    const cx = car.x - 12, cy = car.y - 12;
+    const carIcon = 'M' + (cx + 5.5) + ' ' + (cy + 15) + ' h13 M' + (cx + 6.5) + ' ' + (cy + 15) + ' l1.7 -5.5 h7.6 l1.7 5.5 M' + (cx + 8) + ' ' + (cy + 17) + ' v1.2 M' + (cx + 16) + ' ' + (cy + 17) + ' v1.2';
+    const etaMin = Math.max(0, Math.ceil(6 * (1 - s.prog)));
+    const driverHere = s.step === 'matched' && s.prog >= 1;
+    const arr = new Date(Date.now() + Math.max(1, Math.round(mins * (1 - s.prog))) * 60000);
+    const hhmm = (d) => String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+    const st = s.step;
+    const lift = { route: -90, searching: -90, matched: -60, riding: -60, arrived: -60, scheduled: -130 }[st] || 0;
+    const inRide = st === 'searching' || st === 'matched' || st === 'riding';
+    const fresh = { pay: '', step: 'where', dest: null, mode: 'now', sel: null, prog: 0, share: !!s.prefs.autoshare, stars: 0, query: '', picking: 'dest' };
+
+    // ---------- conversas ----------
+    const CONTACTS = {
+      marina: { name: 'Marina Souza', ini: 'MS', ctx: 'Carona agora para ' + D.short },
+    };
+    RIDES.forEach((r) => { CONTACTS['r' + r.id] = { name: r.driver, ini: r.driver.split(' ').map((w) => w[0]).slice(0, 2).join(''), ctx: 'Carona das ' + r.time + ' para ' + P[r.b].short }; });
+    const openChat = (id) => this.setState({ sub: 'chat', chatWith: id, draft: '' });
+    const pushMsg = (id, text) => {
+      const list = (this.state.chats[id] || []).concat([{ me: true, text }]);
+      this.setState({ chats: { ...this.state.chats, [id]: list }, draft: '', typing: true });
+      clearTimeout(this.replyT);
+      const replies = ['Combinado!', 'Beleza, te aviso quando estiver chegando.', 'Pode ser, sem problema.', 'Tô saindo agora.', 'Fechado, te vejo lá.'];
+      const reply = /antes|depois|hor[aá]rio|min/i.test(text) ? 'Consigo sim, ajusto aqui.' : replies[list.length % replies.length];
+      this.replyT = setTimeout(() => {
+        const l2 = (this.state.chats[id] || []).concat([{ me: false, text: reply }]);
+        this.setState({ chats: { ...this.state.chats, [id]: l2 }, typing: false });
+      }, 1400);
+    };
+    const cw = s.chatWith && CONTACTS[s.chatWith];
+    const chatMsgs = (s.chats[s.chatWith] || []).map((m) => ({ text: m.text, style: 'align-self:' + (m.me ? 'flex-end' : 'flex-start') + ';max-width:78%;font-size:15px;line-height:1.4;padding:10px 14px;border-radius:18px;' + (m.me ? 'background:' + accent + ';color:#FFFFFF;border-bottom-right-radius:6px' : 'background:var(--s2);color:var(--fg);border-bottom-left-radius:6px') }));
+    const quick = ['Estou na portaria', 'Consegue 10 min antes?', 'Chego em 2 min'].map((t) => ({ text: t, send: () => pushMsg(s.chatWith, t) }));
+
+    // ---------- lugares ----------
+    const recents = ['poli', 'civico', 'patio'];
+    const qList = s.query.trim() ? searchPlaces(s.query, []) : recents;
+    const pickPlace = (key) => {
+      if (s.picking === 'origin') { this.setState({ origin: key === 'here' ? null : key, picking: 'dest', query: '' }); return; }
+      if (s.picking === 'home') { this.setState({ home: key, picking: 'dest', query: '' }); this.say('Casa salva: ' + P[key].short); return; }
+      this.stop(); this.setState({ ...fresh, dest: key, step: 'route' });
+    };
+    let places = qList.map((k) => ({ name: P[k].n, addr: P[k].addr, icon: s.query.trim() ? iconOf(P[k].k) : CLOCK, km: fmtKm(kmOf(origin, P[k])), pick: () => pickPlace(k) }));
+    if (s.picking === 'origin') places = [{ name: 'Localização atual', addr: 'Pelo GPS do celular', icon: 'M12 2v3M12 19v3M2 12h3M19 12h3M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12z', km: '', pick: () => pickPlace('here') }].concat(places);
+
+    // ---------- caronas marcadas ----------
+    const rideCards = sched.map((r) => {
+      const isSel = selRide && r.id === selRide.id;
+      const booked = !!s.booked[r.id];
+      const left = r.seats - (booked ? 1 : 0);
+      const A = P[r.a];
+      const away = dist(A, origin) < 20 ? 0 : minOf(kmOf(A, origin)) - 2;
+      const sug = s.suggest[r.id];
+      return {
+        time: r.time, driver: r.driver, rating: r.rating, car: r.car,
+        price: brl(schedTotal),
+        pickup: away <= 0 ? 'Sai perto de você' : 'Passa por você em ' + away + ' min',
+        meta: r.course + ' na ' + r.uni,
+        initials: CONTACTS['r' + r.id].ini,
+        seats: left === 1 ? '1 vaga' : left + ' vagas',
+        seatStyle: 'font-size:12px;font-weight:600;border-radius:99px;padding:5px 10px;' + (left === 1 ? 'color:#FFFFFF;background:' + accent : 'color:var(--fg);border:1px solid var(--line)'),
+        selected: !!isSel, booked,
+        aria: 'Carona das ' + r.time + ' com ' + r.driver,
+        cardStyle: 'border-radius:22px;background:var(--s1);transition:border-color .2s ease;border:1px solid ' + (isSel ? accent : 'var(--line)'),
+        pick: () => this.setState({ sel: r.id }),
+        btnLabel: booked ? 'Reservado' : 'Reservar lugar', btnCls: booked ? 'ghost' : 'inv',
+        reserve: () => { this.setState({ booked: { ...s.booked, [r.id]: !booked } }); if (!booked) this.say('Lugar reservado. Está em Viagens.'); },
+        chat: () => openChat('r' + r.id), chatAria: 'Mensagem para ' + r.driver,
+        suggestLabel: sug ? 'Sugestão enviada para ' + r.driver.split(' ')[0] + ': sair ' + sug + '.' : 'Precisa de outro horário? Sugira para ' + r.driver.split(' ')[0] + '.',
+        earlier: () => { this.setState({ suggest: { ...s.suggest, [r.id]: '10 min antes' } }); pushMsg('r' + r.id, 'Consegue sair 10 min antes?'); },
+        later: () => { this.setState({ suggest: { ...s.suggest, [r.id]: '10 min depois' } }); pushMsg('r' + r.id, 'Consegue sair 10 min depois?'); }
+      };
+    });
+    const alertOn = !!s.alert[s.dest];
+    const stars = [1, 2, 3, 4, 5].map((v) => ({ label: v + (v === 1 ? ' estrela' : ' estrelas'), on: s.stars === v ? 'true' : 'false', fill: v <= s.stars ? accent : 'none', stroke: v <= s.stars ? accent : 'var(--mut2)', pick: () => this.setState({ stars: v }) }));
+
+    // ---------- viagens ----------
+    const upcoming = [];
+    RIDES.filter((r) => s.booked[r.id]).forEach((r) => upcoming.push({
+      kind: 'Reserva', title: P[r.a].short + ' para ' + P[r.b].short, sub: 'Com ' + r.driver + ' no ' + r.car, time: r.time,
+      chat: () => openChat('r' + r.id), chatLabel: 'Mensagem',
+      cancel: () => { this.setState({ booked: { ...s.booked, [r.id]: false } }); this.say('Reserva cancelada.'); }
+    }));
+    s.myOffers.forEach((o, i) => upcoming.push({
+      kind: 'Você dirige', title: P[o.from].short + ' para ' + P[o.to].short, sub: o.seats + (o.seats === 1 ? ' vaga' : ' vagas') + ' por ' + brl(o.price), time: o.time,
+      chat: () => this.say('Ninguém reservou ainda.'), chatLabel: 'Passageiros',
+      cancel: () => { this.setState({ myOffers: s.myOffers.filter((_, j) => j !== i) }); this.say('Carona removida.'); }
+    }));
+    const history = s.history.map((h) => ({ title: h.title, sub: h.sub, price: h.price }));
+
+    // ---------- oferecer ----------
+    const ofSugKeys = s.of ? [] : (s.ofq.trim() ? searchPlaces(s.ofq, []) : []);
+    const otSugKeys = s.ot ? [] : (s.otq.trim() ? searchPlaces(s.otq, s.of ? [s.of] : []) : []);
+    const ofSug = ofSugKeys.map((k) => ({ name: P[k].n, addr: P[k].addr, pick: () => this.setState({ of: k, ofq: P[k].short, error: '' }) }));
+    const otSug = otSugKeys.map((k) => ({ name: P[k].n, addr: P[k].addr, pick: () => this.setState({ ot: k, otq: P[k].short, error: '' }) }));
+    const timeOk = /^([01]\d|2[0-3]):[0-5]\d$/.test(s.oTime);
+    const offerOk = s.of && s.ot && timeOk;
+    const oKm = s.of && s.ot ? kmOf(P[s.of], P[s.ot]) : 0;
+    const oMin = minOf(oKm);
+    const oPassenger = s.of && s.ot ? priceSched(oKm, oMin) : 0;
+    const oGain = oPassenger / (1 + FEE);
+    const dvs = s.driver.status;
+
+    // ---------- abas ----------
+    const tabDefs = [['feed', 'Caronas', PIN], ['trips', 'Viagens', CLOCK], ['offer', 'Oferecer', 'M12 5v14M5 12h14'], ['profile', 'Perfil', 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z']];
+    const tabs = tabDefs.map(([k, label, icon]) => ({
+      label, icon, current: s.tab === k ? 'page' : 'false', dot: k === 'trips' && upcoming.length > 0 && s.tab !== 'trips',
+      pick: () => this.setState(k === s.tab ? { sub: null } : { tab: k, sub: null, error: '', tabTick: (s.tabTick || 0) + 1 }),
+      style: 'position:relative;flex:1;border:0;background:transparent;cursor:pointer;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:4px;padding-top:16px;color:' + (s.tab === k ? 'var(--fg)' : 'var(--mut2)'),
+      iconStyle: 'display:flex;' + (s.tab === k ? 'opacity:0;transform:translateY(-16px)' : 'opacity:1'),
+      labelStyle: 'font-size:11px;font-weight:' + (s.tab === k ? '700' : '600') + ';transition:transform .45s cubic-bezier(.34,1.35,.5,1);' + (s.tab === k ? 'transform:translateY(16px)' : '')
+    }));
+    const tabIdx = Math.max(0, tabDefs.findIndex(([k]) => k === s.tab));
+    const tabCx = 390 / tabDefs.length * (tabIdx + 0.5);
+    const notch = 'radial-gradient(circle at 390px 6px, transparent 34px, #000 35px)';
+    const tabBarStyle = 'position:absolute;inset:0;background:var(--s3);border-radius:24px 24px 0 0;' +
+      '-webkit-mask-image:' + notch + ';mask-image:' + notch + ';-webkit-mask-size:780px 84px;mask-size:780px 84px;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;' +
+      '-webkit-mask-position:' + (tabCx - 390) + 'px 0;mask-position:' + (tabCx - 390) + 'px 0';
+    const bubbleStyle = 'position:absolute;top:-22px;left:0;width:56px;height:56px;transform:translateX(' + (tabCx - 28) + 'px)';
+
+    const readImg = (e, cb) => {
+      const f = e && e.target && e.target.files && e.target.files[0];
+      if (!f) return;
+      try { const r = new FileReader(); r.onload = () => cb(String(r.result)); r.readAsDataURL(f); } catch (err) { this.say('Não foi possível abrir a imagem.'); }
+    };
+
+    const app = s.screen === 'app';
+    const feed = app && s.tab === 'feed';
+    const subTitles = { chat: cw ? cw.name : 'Conversa', edit: 'Editar perfil', settings: 'Configurações', verify: 'E-mail da faculdade', driver: 'Virar motorista' };
+    const dv = s.dv;
+    const plateOk = /^[A-Z]{3}-?\d[A-Z0-9]\d{2}$/.test(dv.plate.toUpperCase());
+    const valOk = /^(0[1-9]|1[0-2])\/20\d{2}$/.test(dv.val);
+
+    const out = {
+      rootStyle, accent, accentGlow, accentDeep, accentText,
+
+      // entrada
+      isWelcome: s.screen === 'welcome', isAuthFlow: aIdx >= 0,
+      isEmail: s.screen === 'email', isCode: s.screen === 'code', isSignup: s.screen === 'signup', isDone: s.screen === 'done',
+      goEmail: () => this.setState({ screen: 'email', error: '' }),
+      authBack: () => this.setState({ screen: aIdx <= 0 ? 'welcome' : authOrder[aIdx - 1], error: '' }),
+      bars: authOrder.map((k, i) => ({ style: 'flex:1;height:3px;border-radius:99px;background:' + (i <= aIdx ? accent : 'var(--line)') })),
+      stepLabel: (aIdx + 1) + '/3',
+      email: s.email, setEmail: (e) => this.setState({ email: e.target.value, error: '' }),
+      emailBorder: s.error && s.screen === 'email' ? 'border-color:var(--err)' : (uni && s.screen === 'email' ? 'border-color:' + accent : ''),
+      hasUni: !!uni && s.screen === 'email', uniName: uni ? uni.n : '',
+      hasError: !!s.error, error: s.error,
+      emailBtn: 'btn ' + (uni ? 'acc' : 'off'),
+      submitEmail: (e) => { this.prevent(e); if (uni) this.setState({ screen: 'code', error: '' }); else this.setState({ error: 'Esse e-mail não é de uma faculdade parceira. Use o institucional, por exemplo nome@ufpr.br.' }); },
+      digits, code: codeClean, setCode: (e) => this.setState({ code: e.target.value.replace(/\D/g, '').slice(0, 6) }),
+      resend: () => { this.setState({ resent: true }); this.say('Código reenviado.'); }, resendLabel: s.resent ? 'Reenviado' : 'Reenviar código',
+      codeBtn: 'btn ' + (codeClean.length === 6 ? 'acc' : 'off'),
+      submitCode: (e) => { this.prevent(e); if (codeClean.length === 6) this.setState({ screen: 'signup', error: '' }); },
+      dName: s.dName, setDName: (e) => this.setState({ dName: e.target.value, error: '' }),
+      cq: s.cq, setCq: (e) => this.setState({ cq: e.target.value, cSel: '' }),
+      courseBorder: s.cSel ? 'border-color:' + accent : '',
+      courseSug, showCourseSug: courseSug.length > 0, shifts,
+      signupBtn: 'btn ' + (signupOk ? 'acc' : 'off'),
+      submitSignup: (e) => {
+        this.prevent(e);
+        if (!signupOk) { this.setState({ error: missing() }); return; }
+        this.setState({ screen: 'done', error: '', user: { name: s.dName.trim(), course: s.cSel, shift: s.dShift, period: periodN, birth: s.dBirth, cpf: s.dCpf, phone: s.dPhone, gender: '', uni: uni ? uni.n : '', email: s.email.trim().toLowerCase(), bio: '', verifiedAt: new Date() } });
+      },
+      initials, firstName: first, userTags,
+      enterApp: () => this.setState({ screen: 'app', tab: 'feed', step: 'where' }),
+
+      // app
+      isApp: app,
+      isWhere: feed && st === 'where', isMapStep: feed && st !== 'where',
+      goProfile: () => this.setState({ tab: 'profile' }),
+      hasPhoto: !!s.photo, noPhoto: !s.photo, photo: s.photo,
+      whereTitle: s.picking === 'home' ? 'Onde fica sua casa?' : (s.picking === 'origin' ? 'De onde você sai?' : 'Para onde, ' + first + '?'),
+      editingOrigin: s.picking === 'origin', showOriginRow: s.picking !== 'origin',
+      editingDest: s.picking !== 'origin', showDestRow: s.picking === 'origin',
+      query: s.query, setQuery: (e) => this.setState({ query: e.target.value }),
+      queryKey: (e) => { if (e.key === 'Enter') { e.preventDefault(); if (s.picking === 'origin' && !s.query.trim()) return; if (qList[0]) pickPlace(qList[0]); } },
+      editOrigin: () => this.setState({ picking: 'origin', query: '' }), editDest: () => this.setState({ picking: 'dest', query: '' }),
+      originName: origin.n, originSub: s.origin ? P[s.origin].addr : 'Pelo GPS do celular',
+      destPlaceholder: s.picking === 'home' ? 'Busque seu endereço ou bairro' : 'Faculdade, lugar ou endereço',
+      showShortcuts: !s.query.trim() && s.picking === 'dest',
+      goUni: () => pickPlace(uni ? uni.campus : 'prado'), uniShort: uni ? P[uni.campus].short : 'Defina no perfil',
+      goHome: () => { if (s.home) pickPlace(s.home); else this.setState({ picking: 'home', query: '' }); },
+      homeShort: s.home ? P[s.home].short : 'Toque para definir',
+      isPickingHome: s.picking === 'home', cancelPick: () => this.setState({ picking: 'dest', query: '' }),
+      listTitle: s.query.trim() ? 'Resultados' : 'Recentes',
+      places, noPlaces: places.length === 0,
+
+      mapWrapStyle: 'position:absolute;left:0;top:0;width:390px;height:844px;transition:transform .6s cubic-bezier(.2,.8,.2,1);transform:translateY(' + lift + 'px)',
+      routeD: toD(route), driverD, ox: origin.x, oy: origin.y, dx: D.x, dy: D.y,
+      meX: Math.round(meP.x), meY: Math.round(meP.y), carX: Math.round(cx), carY: Math.round(cy), carIcon,
+      ringOpacity: st === 'searching' ? '0.5' : '0',
+      mapBack: () => {
+        this.stop();
+        if (st === 'route') this.setState({ ...fresh });
+        else if (st === 'scheduled') this.setState({ step: 'route', sel: null });
+        else this.setState({ ...fresh, dest: s.dest, step: 'route' });
+      },
+      backLabel: inRide ? 'Cancelar' : 'Voltar', backIcon: inRide ? 'M6 6l12 12M18 6L6 18' : 'M19 12H5M11 18l-6-6 6-6',
+      originShort: originLabel, destShort: D.short,
+      isRoute: st === 'route', isSearching: st === 'searching', isMatched: st === 'matched', isRiding: st === 'riding', isArrived: st === 'arrived', isScheduled: st === 'scheduled',
+      km: fmtKm(km), min: mins + ' min',
+      nowOn: s.mode === 'now' ? 'true' : 'false', schedOn: s.mode === 'sched' ? 'true' : 'false',
+      nowStyle: 'display:flex;align-items:center;gap:14px;border-radius:20px;padding:12px 14px;cursor:pointer;color:var(--fg);background:var(--s2);border:1.5px solid ' + (s.mode === 'now' ? accent : 'transparent'),
+      schedStyle: 'display:flex;align-items:center;gap:14px;border-radius:20px;padding:12px 14px;cursor:pointer;color:var(--fg);background:var(--s2);border:1.5px solid ' + (s.mode === 'sched' ? accent : 'transparent'),
+      pickNow: () => this.setState({ mode: 'now' }), pickSched: () => this.setState({ mode: 'sched' }),
+      nowPrice: brl(nowTotal),
+      schedSub: sched.length ? (sched.length === 1 ? '1 saída hoje' : sched.length + ' saídas hoje') : 'Nenhuma saída hoje',
+      schedPrice: brl(schedTotal),
+      routeCta: s.mode === 'now' ? 'Pedir carona' : 'Ver caronas marcadas',
+      confirmRoute: () => {
+        if (s.mode === 'sched') { this.setState({ step: 'scheduled', sel: null }); return; }
+        this.stop(); this.setState({ step: 'searching' });
+        this.timer = setTimeout(() => { this.timer = null; this.run('matched', 9000); }, 2800);
+      },
+      cancelRide: () => { this.stop(); this.setState({ ...fresh, dest: s.dest, step: 'route' }); },
+      matchKicker: driverHere ? 'Chegou' : 'Carona aceita',
+      matchTitle: driverHere ? 'Marina está te esperando' : 'Marina está a caminho',
+      eta: etaMin, driverComing: !driverHere, driverHere,
+      openChatMarina: () => openChat('marina'),
+      chatBtnLabel: (s.chats.marina || []).length ? 'Abrir conversa' : 'Mensagem',
+      startRide: () => this.run('riding', 12000, () => this.setState({ step: 'arrived' })),
+      arrival: hhmm(arr), kmLeft: fmtKm(km * (1 - s.prog)),
+      progressStyle: 'height:100%;border-radius:99px;background:' + accent + ';width:' + Math.round(s.prog * 100) + '%;transition:width .4s linear',
+      toggleShare: () => { this.setState({ share: !s.share }); if (!s.share) this.say('Link do trajeto enviado para seu contato.'); },
+      shareOnAttr: s.share ? 'true' : 'false', shareCls: s.share ? 'ghost' : 'inv',
+      shareLabel: s.share ? 'Trajeto compartilhado' : 'Compartilhar trajeto',
+      stars, finishBtn: 'btn ' + (s.stars && s.pay ? 'acc' : 'off'),
+      finishLabel: s.pay === 'card' ? 'Pagar ' + brl(nowTotal) + ' no cartão' : s.pay === 'pix' ? 'Pagar ' + brl(nowTotal) + ' com Pix' : 'Pagar ' + brl(nowTotal),
+      payOpts: [['pix', 'Pix'], ['card', 'Cartão']].map(([k, label]) => ({ label, on: s.pay === k ? 'true' : 'false', cls: s.pay === k ? 'on' : '', pick: () => this.setState({ pay: k }) })),
+      finish: () => {
+        if (!s.pay) { this.say('Escolha Pix ou cartão.'); return; }
+        if (!s.stars) { this.say('Dê uma nota de 1 a 5.'); return; }
+        this.stop();
+        const h = { title: originLabel + ' para ' + D.short, sub: 'Com Marina Souza, ' + new Date().toLocaleDateString('pt-BR'), price: brl(nowTotal) };
+        this.setState({ ...fresh, history: [h].concat(s.history) });
+        this.say('Obrigado! A carona está no seu histórico.');
+      },
+      rides: rideCards, empty: rideCards.length === 0,
+      toggleAlert: () => { this.setState({ alert: { ...s.alert, [s.dest]: !alertOn } }); if (!alertOn) this.say('Avisaremos quando aparecer.'); },
+      alertOn: alertOn ? 'true' : 'false', alertCls: alertOn ? 'ghost' : 'inv', alertLabel: alertOn ? 'Aviso ligado' : 'Me avise',
+
+      isTrips: app && s.tab === 'trips', upcoming, noUpcoming: upcoming.length === 0,
+      history, hasHistory: history.length > 0, noHistory: history.length === 0,
+
+      isOffer: app && s.tab === 'offer',
+      offerLocked: dvs !== 'approved', offerOpen: dvs === 'approved', driverNone: dvs === 'none',
+      lockTitle: dvs === 'review' ? 'Seu cadastro está em análise' : 'Cadastre-se como motorista',
+      lockText: dvs === 'review' ? 'Assim que a CNH e o veículo forem conferidos, você pode publicar caronas.' : 'Para oferecer caronas, envie sua CNH e os dados do veículo. É rápido e fica salvo no seu perfil.',
+      openDriver: () => this.setState({ sub: 'driver', error: '' }),
+      ofq: s.ofq, setOfq: (e) => this.setState({ ofq: e.target.value, of: null }), ofBorder: s.of ? 'border-color:' + accent : '',
+      otq: s.otq, setOtq: (e) => this.setState({ otq: e.target.value, ot: null }), otBorder: s.ot ? 'border-color:' + accent : '',
+      ofSug, showOfSug: ofSug.length > 0, otSug, showOtSug: otSug.length > 0,
+      oTime: s.oTime,
+      setOTime: (e) => { let v = e.target.value.replace(/[^\d]/g, '').slice(0, 4); if (v.length > 2) v = v.slice(0, 2) + ':' + v.slice(2); this.setState({ oTime: v, error: '' }); },
+      oSeats: s.oSeats,
+      seatsDown: () => this.setState({ oSeats: Math.max(1, s.oSeats - 1) }), seatsUp: () => this.setState({ oSeats: Math.min(4, s.oSeats + 1) }),
+      offerHasRoute: !!(s.of && s.ot), offerTrip: fmtKm(oKm) + ', cerca de ' + oMin + ' min', offerGain: brl(oGain),
+      offerBtn: 'btn ' + (offerOk ? 'acc' : 'off'),
+      publishOffer: (e) => {
+        this.prevent(e);
+        if (!offerOk) { this.setState({ error: !s.of ? 'Escolha de onde você sai na lista.' : !s.ot ? 'Escolha para onde vai na lista.' : 'Digite o horário como 17:50.' }); return; }
+        this.setState({ myOffers: s.myOffers.concat([{ from: s.of, to: s.ot, time: s.oTime, seats: s.oSeats, price: oPassenger }]), of: null, ofq: '', ot: null, otq: '', oTime: '', tab: 'trips', error: '' });
+        this.say('Carona publicada.');
+      },
+
+      isProfile: app && s.tab === 'profile',
+      setPhoto: (e) => readImg(e, (url) => { this.setState({ photo: url }); this.say('Foto atualizada.'); }),
+      userName: U ? U.name : '', hasBio: !!(U && U.bio), userBio: U ? U.bio : '',
+      tripCount: String(s.history.length), ratingLabel: s.history.length ? '5,0' : 'Nova',
+      driverCardStyle: 'width:100%;display:flex;align-items:center;gap:14px;border-radius:20px;padding:18px;cursor:pointer;text-align:left;' + (dvs === 'none' ? 'border:0;background:' + accent + ';color:#FFFFFF' : 'border:1px solid var(--line);background:var(--s1);color:var(--fg)'),
+      driverCardTitle: dvs === 'none' ? 'Virar motorista' : dvs === 'review' ? 'Cadastro em análise' : 'Motorista verificado',
+      driverCardSub: dvs === 'none' ? 'Cadastre CNH e veículo para oferecer caronas' : (s.driver.model || '') + ' ' + (s.driver.color || '').toLowerCase() + ', placa ' + (s.driver.plate || ''),
+      openEdit: () => this.setState({ sub: 'edit', dName: U.name, cq: U.course, cSel: U.course, dShift: U.shift, dBio: U.bio || '', dBirth: U.birth || '', dCpf: U.cpf || '', dPhone: U.phone || '', dPeriod: String(U.period || ''), dGender: U.gender || '', error: '' }),
+      goTrips: () => this.setState({ tab: 'trips' }),
+      tripsSummary: upcoming.length ? upcoming.length + (upcoming.length === 1 ? ' próxima' : ' próximas') : (s.history.length ? s.history.length + ' concluídas' : 'Nenhuma ainda'),
+      openVerify: () => this.setState({ sub: 'verify' }),
+      toggleTheme: () => this.setState({ theme: light ? 'dark' : 'light' }), themeLabel: light ? 'Claro' : 'Escuro',
+      openSettings: () => this.setState({ sub: 'settings' }),
+      tabs,
+
+      isSub: app && !!s.sub, closeSub: () => this.setState({ sub: null, error: '' }),
+      subTitle: subTitles[s.sub] || '', hasSubSub: s.sub === 'chat', subSub: cw ? 'Universitário verificado' : '',
+      isChat: s.sub === 'chat', chatInitials: cw ? cw.ini : '', chatContext: cw ? cw.ctx : '',
+      chatMsgs, typing: s.typing, quick, draft: s.draft,
+      setDraft: (e) => this.setState({ draft: e.target.value }),
+      sendChat: (e) => { this.prevent(e); const t = s.draft.trim(); if (t) pushMsg(s.chatWith, t); },
+      isEdit: s.sub === 'edit',
+      dBio: s.dBio, setDBio: (e) => this.setState({ dBio: e.target.value.slice(0, 140) }), bioCount: s.dBio.length,
+      saveEdit: (e) => {
+        this.prevent(e);
+        if (!signupOk) { this.setState({ error: missing() }); return; }
+        this.setState({ user: { ...U, name: s.dName.trim(), course: s.cSel, shift: s.dShift, bio: s.dBio.trim(), birth: s.dBirth, cpf: s.dCpf, phone: s.dPhone, period: periodN, gender: s.dGender }, sub: null, error: '' });
+        this.say('Perfil atualizado.');
+      },
+      isSettings: s.sub === 'settings',
+      themes: [['dark', 'Escuro'], ['light', 'Claro']].map(([k, label]) => ({ label, on: theme === k ? 'true' : 'false', cls: theme === k ? 'on' : '', pick: () => this.setState({ theme: k }) })),
+      prefs: [
+        ['notif', 'Avisos de carona', 'Quando alguém aceitar ou mandar mensagem'],
+        ['autoshare', 'Compartilhar trajeto sempre', 'Envia o trajeto para seu contato a cada viagem'],
+        ['showCourse', 'Mostrar meu curso', 'Aparece no seu perfil para os outros']
+      ].map(([k, label, sub]) => ({ label, sub, on: s.prefs[k] ? 'true' : 'false', cls: s.prefs[k] ? 'on' : '', toggle: () => this.setState({ prefs: { ...s.prefs, [k]: !s.prefs[k] } }) })),
+      logout: () => { this.stop(); this.setState({ screen: 'welcome', user: null, sub: null, email: '', code: '', dName: '', cq: '', cSel: '', dShift: '', photo: '', tab: 'feed', ...fresh, history: [], booked: {}, myOffers: [], chats: {}, driver: { status: 'none' }, origin: null, home: null }); },
+      isVerify: s.sub === 'verify', userEmail: U ? U.email : '', uniName2: U ? U.uni : '',
+      verifiedAt: U && U.verifiedAt ? new Date(U.verifiedAt).toLocaleDateString('pt-BR') : '',
+      isDriver: s.sub === 'driver', driverFormOpen: dvs === 'none', driverStatusOpen: dvs !== 'none',
+      dvCnh: dv.cnh, setDvCnh: (e) => this.setState({ dv: { ...dv, cnh: e.target.value.replace(/\D/g, '').slice(0, 11) }, error: '' }),
+      dvVal: dv.val, setDvVal: (e) => { let v = e.target.value.replace(/\D/g, '').slice(0, 6); if (v.length > 2) v = v.slice(0, 2) + '/' + v.slice(2); this.setState({ dv: { ...dv, val: v }, error: '' }); },
+      dvPlate: dv.plate, setDvPlate: (e) => this.setState({ dv: { ...dv, plate: e.target.value.toUpperCase().slice(0, 8) }, error: '' }),
+      dvColor: dv.color, setDvColor: (e) => this.setState({ dv: { ...dv, color: e.target.value }, error: '' }),
+      dvModel: dv.model, setDvModel: (e) => this.setState({ dv: { ...dv, model: e.target.value }, error: '' }),
+      cnhPhotoLabel: dv.photo ? 'Foto da CNH adicionada' : 'Adicionar foto da CNH',
+      setCnhPhoto: (e) => readImg(e, () => this.setState({ dv: { ...dv, photo: true }, error: '' })),
+      submitDriver: (e) => {
+        this.prevent(e);
+        const err = dv.cnh.length !== 11 ? 'A CNH tem 11 números.' : !valOk ? 'Validade no formato MM/AAAA.' : !plateOk ? 'Placa inválida. Ex.: ABC1D23.' : !dv.model.trim() ? 'Informe o modelo do carro.' : !dv.color.trim() ? 'Informe a cor do carro.' : !dv.photo ? 'Adicione a foto da CNH.' : '';
+        if (err) { this.setState({ error: err }); return; }
+        this.setState({ driver: { status: 'review', plate: dv.plate.toUpperCase(), model: dv.model.trim(), color: dv.color.trim() }, error: '' });
+        clearTimeout(this.dvT);
+        this.dvT = setTimeout(() => { this.setState({ driver: { ...this.state.driver, status: 'approved' } }); this.say('Cadastro aprovado. Você já pode oferecer caronas.'); }, 4000);
+      },
+      dvReview: dvs === 'review', dvApproved: dvs === 'approved',
+      dvStatusKicker: dvs === 'approved' ? 'Aprovado' : 'Em análise',
+      dvStatusTitle: dvs === 'approved' ? 'Você é motorista UniCar' : 'Estamos conferindo seus documentos',
+      dvStatusText: dvs === 'approved' ? 'Sua CNH e seu veículo foram conferidos. Agora você pode publicar caronas.' : 'Isso leva pouco tempo. Avisamos assim que terminar.',
+      dvCar: (s.driver.model || '') + ' ' + (s.driver.color || '').toLowerCase(), dvPlateShow: s.driver.plate || '',
+      goOffer: () => this.setState({ sub: null, tab: 'offer' }),
+
+      driverShort: dvs === 'approved' ? 'Aprovado' : dvs === 'review' ? 'Em análise' : 'Não cadastrado',
+      payments: [['pix', 'Pix', 'Pago na hora, direto pelo app'], ['card', 'Cartão de crédito', 'Cadastro do cartão chega com o backend']].map(([k, label, sub]) => ({ label, sub, on: (s.pay || 'pix') === k ? 'true' : 'false', pick: () => this.setState({ pay: k }), dot: 'width:20px;height:20px;border-radius:99px;flex:none;box-sizing:border-box;' + ((s.pay || 'pix') === k ? 'background:' + accent + ';border:5px solid var(--s1);box-shadow:0 0 0 1.5px ' + accent : 'border:1.5px solid var(--mut2)') })),
+      trustedLabel: s.trusted ? 'Recebe seu trajeto: ' + s.trusted : 'Ninguém definido',
+      trustedBtn: s.editTrusted ? 'Fechar' : (s.trusted ? 'Alterar' : 'Adicionar'),
+      editingTrusted: !!s.editTrusted, trustedDraft: s.trustedDraft || '',
+      editTrusted: () => this.setState({ editTrusted: !s.editTrusted, trustedDraft: s.trusted || '' }),
+      setTrustedDraft: (e) => this.setState({ trustedDraft: e.target.value }),
+      saveTrusted: () => { const v = (s.trustedDraft || '').trim(); if (v.replace(/\D/g, '').length < 10) { this.say('Digite um telefone com DDD.'); return; } this.setState({ trusted: v, editTrusted: false }); this.say('Contato de confiança salvo.'); },
+      saveTrustedKey: (e) => { if (e.key === 'Enter') { e.preventDefault(); out.saveTrusted(); } },
+      showHelp: () => this.say('Suporte: chat com a equipe UniCar chega com o backend.'),
+      showTerms: () => this.say('Termos e privacidade serão escritos antes do lançamento.'),
+      dBirth: s.dBirth, setDBirth: (e) => this.setState({ dBirth: mask(e.target.value, '99/99/9999'), error: '' }),
+      dPhone: s.dPhone, setDPhone: (e) => this.setState({ dPhone: mask(e.target.value, '(99) 99999-9999'), error: '' }),
+      dCpf: s.dCpf, setDCpf: (e) => this.setState({ dCpf: mask(e.target.value, '999.999.999-99'), error: '' }),
+      dPeriod: s.dPeriod, setDPeriod: (e) => this.setState({ dPeriod: e.target.value.replace(/\D/g, '').slice(0, 2), error: '' }),
+      genders: ['Mulher', 'Homem', 'Prefiro não dizer'].map((label) => ({ label, on: s.dGender === label ? 'true' : 'false', cls: s.dGender === label ? 'on' : '', pick: () => this.setState({ dGender: s.dGender === label ? '' : label }) })),
+      tabBarStyle, bubbleStyle, blobClass: 'blob' + ((s.tabTick || 0) % 2),
+      activeIcons: [{ icon: tabDefs[tabIdx][2], key: s.tab }],
+      hasToast: !!s.toast, toast: s.toast
+    };
+    ["submitEmail", "submitCode", "submitSignup", "publishOffer", "sendChat", "saveEdit", "submitDriver"].forEach((k) => { out[k + 'Key'] = (e) => { if (e.key === 'Enter') { e.preventDefault(); out[k](e); } }; });
+    return out;
+  }
+}
+</script>
+</body>
+</html>
