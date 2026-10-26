@@ -33,8 +33,8 @@ public class TripsController(AppDbContext db, TripService trips, ChatService cha
     }
 
     /// <summary>
-    /// Motorista: DriverArrived ("Chegou") → InProgress ("Já embarquei") → Completed (chegada), nessa ordem.
-    /// Cancelled: motorista ou passageiro, só antes de começar a viagem.
+    /// Nessa ordem: DriverArrived ("Chegou", motorista) → InProgress ("Já embarquei", passageiro ou motorista)
+    /// → Completed (chegada, motorista). Cancelled: motorista ou passageiro, só antes de começar a viagem.
     /// </summary>
     [HttpPost("trips/{id:guid}/status")]
     public async Task<IActionResult> SetStatus(Guid id, TripStatusRequest req, CancellationToken ct)
@@ -48,7 +48,8 @@ public class TripsController(AppDbContext db, TripService trips, ChatService cha
         var allowed = (trip.Status, next) switch
         {
             (TripStatus.Accepted, TripStatus.DriverArrived) => isDriver,
-            (TripStatus.DriverArrived, TripStatus.InProgress) => isDriver,
+            // "Já embarquei": o passageiro confirma (tela do protótipo) ou o motorista marca
+            (TripStatus.DriverArrived, TripStatus.InProgress) => true,
             (TripStatus.InProgress, TripStatus.Completed) => isDriver,
             (TripStatus.Accepted or TripStatus.DriverArrived, TripStatus.Cancelled) => true,
             _ => false

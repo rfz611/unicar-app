@@ -70,10 +70,12 @@ public class RealtimeTests(ApiFactory api)
         var publicTrip = await Ok<PublicTripDto>(anonymous.GetAsync($"/api/public/trips/{share.Token}"));
         Assert.Equal(-25.4500, publicTrip.DriverLocation!.Latitude);
 
-        // chegou → embarcou → chegada
+        // chegou (motorista) → "Já embarquei" (passageira) → chegada (motorista)
         var arrivedMsg = HubEvents.Next<MessageDto>(anaHub, RealtimeEvents.MessageReceived, m => m.Kind == "System");
-        foreach (var status in new[] { "DriverArrived", "InProgress", "Completed" })
-            Assert.Equal(status, (await Ok<TripDto>(driver.PostAsJsonAsync($"/api/trips/{trip.Id}/status", new { status }))).Status);
+        Assert.Equal("DriverArrived", (await Ok<TripDto>(driver.PostAsJsonAsync($"/api/trips/{trip.Id}/status", new { status = "DriverArrived" }))).Status);
+        Assert.Equal("InProgress", (await Ok<TripDto>(ana.PostAsJsonAsync($"/api/trips/{trip.Id}/status", new { status = "InProgress" }))).Status);
+        Assert.Equal("invalid_transition", await Error(ana.PostAsJsonAsync($"/api/trips/{trip.Id}/status", new { status = "Completed" })));
+        Assert.Equal("Completed", (await Ok<TripDto>(driver.PostAsJsonAsync($"/api/trips/{trip.Id}/status", new { status = "Completed" }))).Status);
         Assert.Contains("chegou", (await arrivedMsg).Text);
 
         // você chegou: Pix + nota
@@ -160,6 +162,9 @@ public class RealtimeTests(ApiFactory api)
         Assert.Equal("invalid_transition", await Error(driver.PostAsJsonAsync($"/api/trips/{trip.Id}/status", new { status = "Completed" })));
         Assert.Equal("trip_not_finished", await Error(ana.PostAsJsonAsync($"/api/trips/{trip.Id}/complete", new { paymentMethod = "Pix", rating = 5 })));
         Assert.Equal("invalid_payment_method", await Error(ana.PostAsJsonAsync($"/api/trips/{trip.Id}/complete", new { paymentMethod = "Boleto" })));
+
+        // "Já embarquei" só depois que o motorista chegou
+        Assert.Equal("invalid_transition", await Error(ana.PostAsJsonAsync($"/api/trips/{trip.Id}/status", new { status = "InProgress" })));
 
         // passageira pode cancelar antes de embarcar
         Assert.Equal("Cancelled", (await Ok<TripDto>(ana.PostAsJsonAsync($"/api/trips/{trip.Id}/status", new { status = "Cancelled" }))).Status);
