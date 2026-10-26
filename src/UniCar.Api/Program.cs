@@ -53,7 +53,9 @@ builder.Services.AddScoped<UniversityResolver>();
 builder.Services.AddScoped<EmailCodeService>();
 builder.Services.AddSingleton<TokenService>();
 builder.Services.AddSingleton<PricingService>();
-builder.Services.AddHttpClient<IMapsClient, GoogleMapsClient>(c => c.Timeout = TimeSpan.FromSeconds(10));
+builder.Services.AddHttpClient<GoogleMapsClient>(c => c.Timeout = TimeSpan.FromSeconds(10));
+// Sem chave do Google em Development: busca e GPS com o catálogo local (Places/LocalPlaces.cs)
+builder.Services.AddScoped<IMapsClient, FallbackMapsClient>();
 builder.Services.AddScoped<RouteService>();
 builder.Services.Configure<DemoOptions>(config.GetSection(DemoOptions.Section));
 builder.Services.AddScoped<DemoSeed>();
