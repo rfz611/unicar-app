@@ -1,24 +1,44 @@
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { View } from 'react-native';
 import { Icon } from '@/components/Icon';
-import { EmptyBox, Page } from '@/components/Page';
+import { Page } from '@/components/Page';
 import { H1, Text } from '@/components/Text';
+import { Button, Chip } from '@/components/ui';
+import { OfferForm } from '@/features/rides/OfferForm';
 import { DriverMode } from '@/features/trips/DriverMode';
 import { useSession } from '@/session/SessionProvider';
 import { useTheme } from '@/theme/ThemeProvider';
 
 /**
- * Aba Oferecer: bloqueada até virar motorista (User.DriverStatus). Motorista aprovado vê "Dirigir agora"
- * (pedir agora, etapa 4); o formulário de carona marcada entra na etapa 5.
+ * Aba Oferecer: bloqueada até virar motorista (User.DriverStatus). Motorista aprovado escolhe entre
+ * publicar carona marcada (formulário do protótipo) e "Dirigir agora" (recebe os pedidos do pedir agora).
  */
 export default function Offer() {
   const { t } = useTheme();
-  const { user } = useSession();
+  const { user, refreshUser } = useSession();
+  const [mode, setMode] = useState<'scheduled' | 'now'>('scheduled');
   const status = user?.driverStatus ?? 'None';
+  // aprovado no painel enquanto o app estava aberto: libera ao voltar para a aba
+  useFocusEffect(
+    useCallback(() => {
+      if (status !== 'Approved') refreshUser().catch(() => {});
+    }, [status, refreshUser]),
+  );
   if (status === 'Approved') {
     return (
       <DriverMode
-        header={<H1>Oferecer carona</H1>}
-        footer={<EmptyBox>Publicar carona marcada (horário e vagas) chega na etapa 5.</EmptyBox>}
+        header={
+          <>
+            <H1>Oferecer carona</H1>
+            <View accessibilityRole="radiogroup" accessibilityLabel="Tipo de carona" style={{ flexDirection: 'row', gap: 8, marginTop: -4 }}>
+              <Chip label="Carona marcada" on={mode === 'scheduled'} minHeight={48} style={{ flex: 1 }} onPress={() => setMode('scheduled')} />
+              <Chip label="Dirigir agora" on={mode === 'now'} minHeight={48} style={{ flex: 1 }} onPress={() => setMode('now')} />
+            </View>
+          </>
+        }
+        showDrive={mode === 'now'}
+        footer={mode === 'scheduled' ? <OfferForm /> : null}
       />
     );
   }
@@ -38,6 +58,7 @@ export default function Offer() {
             ? 'Assim que a CNH e o veículo forem conferidos, você pode publicar caronas.'
             : 'Para oferecer caronas, envie sua CNH e os dados do veículo. É rápido e fica salvo no seu perfil.'}
         </Text>
+        {!review ? <Button variant="acc" label="Cadastrar CNH e veículo" onPress={() => router.push('/driver')} /> : null}
       </View>
     </Page>
   );

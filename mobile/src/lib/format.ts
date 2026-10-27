@@ -77,3 +77,18 @@ export function matchCourses(all: string[], query: string) {
 
 /** R$ 12,50 */
 export const brl = (value: number) => 'R$ ' + value.toFixed(2).replace('.', ',');
+
+/** Data local "AAAA-MM-DD" daqui a N dias (0 = hoje). */
+export const isoDay = (offset: number) => {
+  const d = new Date();
+  d.setDate(d.getDate() + offset);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+
+/** "Hoje", "Amanhã", "Ontem" ou "23/10" para uma data "AAAA-MM-DD". */
+export function dayLabel(iso: string) {
+  if (iso === isoDay(0)) return 'Hoje';
+  if (iso === isoDay(1)) return 'Amanhã';
+  if (iso === isoDay(-1)) return 'Ontem';
+  return toBrDate(iso).slice(0, 5);
+}

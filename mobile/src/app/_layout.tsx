@@ -51,6 +51,10 @@ function Root() {
           <Stack.Protected guard={signedIn}>
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="chat/[id]" />
+            <Stack.Screen name="edit-profile" />
+            <Stack.Screen name="settings" />
+            <Stack.Screen name="verify-email" />
+            <Stack.Screen name="driver" />
           </Stack.Protected>
         </Stack>
       </View>

@@ -2,10 +2,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Platform, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { api } from '@/api/client';
-import type { MyTrips, RideRequestOffer, SavedPlace, Trip } from '@/api/types';
+import type { MyTrips, RideRequestOffer, Trip } from '@/api/types';
 import { Icon } from '@/components/Icon';
 import { Page } from '@/components/Page';
-import { PlaceField } from '@/components/PlaceField';
+import { PlaceField, usePlaceShortcuts } from '@/components/PlaceField';
 import { RideMap } from '@/components/RideMap';
 import { tabBarSpace } from '@/components/TabBar';
 import { Label, Text } from '@/components/Text';
@@ -16,7 +16,6 @@ import { brl } from '@/lib/format';
 import { km, type AppPlace, type LatLng } from '@/lib/geo';
 import { currentPosition } from '@/lib/location';
 import { useHubEvent, useRealtime } from '@/realtime/RealtimeProvider';
-import { useSession } from '@/session/SessionProvider';
 import { useTheme } from '@/theme/ThemeProvider';
 import { openChat } from './PassengerTrip';
 
@@ -35,14 +34,12 @@ function stepToward(from: LatLng, to: LatLng): LatLng {
  * Lado do motorista do "Pedir agora" (aba Oferecer, motorista aprovado): avisa que está dirigindo,
  * recebe pedidos pelo SignalR, aceita e conduz a corrida mandando a posição a cada 3 s.
  */
-export function DriverMode({ header, footer }: { header: React.ReactNode; footer?: React.ReactNode }) {
+export function DriverMode({ header, footer, showDrive = true }: { header: React.ReactNode; footer?: React.ReactNode; showDrive?: boolean }) {
   const { t } = useTheme();
-  const { user } = useSession();
   const { say, sayError } = useToast();
   const { connected } = useRealtime();
   const [from, setFrom] = useState<AppPlace | null>(null);
   const [to, setTo] = useState<AppPlace | null>(null);
-  const [home, setHome] = useState<SavedPlace | null>(null);
   const [online, setOnline] = useState(false);
   const [offers, setOffers] = useState<RideRequestOffer[]>([]);
   const [trip, setTrip] = useState<Trip | null>(null);
@@ -64,7 +61,6 @@ export function DriverMode({ header, footer }: { header: React.ReactNode; footer
           setTrip(tr);
         }
       }
-      setHome(await api.get<SavedPlace>('/api/me/places/home').catch(() => null));
       const pos = Platform.OS === 'web' ? null : await currentPosition();
       if (!alive) return;
       setGpsOk(!!pos);
@@ -75,12 +71,7 @@ export function DriverMode({ header, footer }: { header: React.ReactNode; footer
     };
   }, []);
 
-  const shortcuts = [
-    ...(user?.campus
-      ? [{ label: 'Minha faculdade', place: { name: `${user.university} - ${user.campus.name}`, short: `${user.university} ${user.campus.name}`, address: user.campus.address, latitude: user.campus.latitude, longitude: user.campus.longitude } }]
-      : []),
-    ...(home ? [{ label: 'Casa', place: { name: 'Casa', short: home.neighborhood ?? 'Casa', address: home.address, latitude: home.latitude, longitude: home.longitude, neighborhood: home.neighborhood } }] : []),
-  ];
+  const shortcuts = usePlaceShortcuts();
 
   const goOnline = useCallback(async () => {
     if (!from || !to) return;
@@ -168,15 +159,12 @@ export function DriverMode({ header, footer }: { header: React.ReactNode; footer
   return (
     <Page>
       {header}
+      {/* dirigindo, continua à vista mesmo na outra opção, para não perder pedido */}
+      {showDrive || online ? (
       <View style={{ gap: 14 }}>
-      <View style={{ gap: 6 }}>
-        <Text size={20} weight={700} tracking={-0.03}>
-          Dirigir agora
-        </Text>
-        <Text size={15} leading={1.5} color={t.mut}>
-          Diga para onde está indo. Quem pedir carona no caminho aparece aqui.
-        </Text>
-      </View>
+      <Text size={15} leading={1.5} color={t.mut}>
+        Diga para onde está indo. Quem pedir carona no caminho aparece aqui.
+      </Text>
       {!online ? (
         <>
           <PlaceField label="Saindo de" value={from} onChange={setFrom} placeholder="Ex.: Batel" shortcuts={shortcuts} />
@@ -200,6 +188,7 @@ export function DriverMode({ header, footer }: { header: React.ReactNode; footer
         </>
       )}
       </View>
+      ) : null}
       {footer}
     </Page>
   );

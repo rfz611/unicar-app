@@ -229,6 +229,7 @@ export function Toggle({ on, onChange, label }: { on: boolean; onChange: (v: boo
       accessibilityRole="switch"
       accessibilityLabel={label}
       accessibilityState={{ checked: on }}
+      aria-checked={on}
       onPress={() => onChange(!on)}
       style={{ width: 52, height: 32, borderRadius: radius.pill, backgroundColor: on ? t.accent : t.s3, padding: 3 }}
     >

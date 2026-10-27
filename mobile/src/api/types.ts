@@ -203,3 +203,22 @@ export type Preferences = {
   alwaysShareTrip: boolean;
   showCourse: boolean;
 };
+
+// ---------- motorista ----------
+
+export type DriverStatus = User['driverStatus'];
+
+export type DriverApplication = {
+  status: DriverStatus;
+  cnhMasked: string;
+  cnhExpiry: string;
+  plate: string;
+  model: string;
+  color: string;
+  hasCnhPhoto: boolean;
+  hasSelfie: boolean;
+  missing: ('cnhPhoto' | 'selfie')[];
+  submittedAt: string | null;
+  reviewedAt: string | null;
+  rejectionReason: string | null;
+};

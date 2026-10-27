@@ -1,13 +1,34 @@
 import { useEffect, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { api } from '@/api/client';
-import type { PlaceDetails, PlaceSuggestion } from '@/api/types';
+import type { PlaceDetails, PlaceSuggestion, SavedPlace } from '@/api/types';
 import { placeFromDetails } from '@/features/rides/WhereStep';
 import { uuid, type AppPlace } from '@/lib/geo';
+import { useSession } from '@/session/SessionProvider';
 import { useTheme } from '@/theme/ThemeProvider';
 import { Text } from './Text';
 import { useToast } from './Toast';
 import { Chip, Field, List } from './ui';
+
+export type PlaceShortcut = { label: string; place: AppPlace };
+
+/**
+ * Atalhos "Minha faculdade" (campus do perfil) e "Casa" (GET /api/me/places/home) para os campos de lugar.
+ * O campus vai como "bairro" para a carona aparecer como "UFPR Centro Politécnico" nas listas.
+ */
+export function usePlaceShortcuts(): PlaceShortcut[] {
+  const { user } = useSession();
+  const [home, setHome] = useState<SavedPlace | null>(null);
+  useEffect(() => {
+    api.get<SavedPlace>('/api/me/places/home').then(setHome, () => {});
+  }, []);
+  return [
+    ...(user?.campus
+      ? [{ label: 'Minha faculdade', place: { name: `${user.university} - ${user.campus.name}`, short: `${user.university} ${user.campus.name}`, address: user.campus.address, latitude: user.campus.latitude, longitude: user.campus.longitude, neighborhood: `${user.university} ${user.campus.name}` } }]
+      : []),
+    ...(home ? [{ label: 'Casa', place: { name: 'Casa', short: home.neighborhood ?? 'Casa', address: home.address, latitude: home.latitude, longitude: home.longitude, neighborhood: home.neighborhood } }] : []),
+  ];
+}
 
 /**
  * Campo de lugar do formulário "Oferecer" do protótipo ("Saindo de", "Indo para"): digita, aparecem
@@ -24,7 +45,7 @@ export function PlaceField({
   value: AppPlace | null;
   onChange: (p: AppPlace | null) => void;
   placeholder: string;
-  shortcuts?: { label: string; place: AppPlace }[];
+  shortcuts?: PlaceShortcut[];
 }) {
   const { t } = useTheme();
   const { sayError } = useToast();

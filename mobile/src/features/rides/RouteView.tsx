@@ -12,19 +12,13 @@ import { Label, Text } from '@/components/Text';
 import { useToast } from '@/components/Toast';
 import { Panel, ScanBar } from '@/components/TripParts';
 import { Button, IconButton } from '@/components/ui';
-import { brl } from '@/lib/format';
+import { brl, isoDay } from '@/lib/format';
 import { decodePolyline, fmtKm, type AppPlace } from '@/lib/geo';
 import { useHubEvent } from '@/realtime/RealtimeProvider';
 import { useTheme } from '@/theme/ThemeProvider';
 
 type Mode = 'now' | 'sched';
 type Day = 'today' | 'tomorrow';
-
-const isoDay = (offset: number) => {
-  const d = new Date();
-  d.setDate(d.getDate() + offset);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-};
 
 /** Rota no mapa (isRoute), "Procurando colegas" (isSearching) e caronas marcadas (isScheduled) do protótipo. */
 export function RouteView({ origin, destination, onBack, onTrip }: { origin: AppPlace; destination: AppPlace; onBack: () => void; onTrip: (tripId: string) => void }) {

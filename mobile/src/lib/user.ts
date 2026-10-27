@@ -8,3 +8,18 @@ export function userTags(u: Pick<User, 'course' | 'showCourse' | 'period' | 'uni
 }
 
 export const firstName = (fullName?: string | null) => fullName?.trim().split(/\s+/)[0] ?? '';
+
+/** Corpo do PUT /api/users/me a partir do usuário atual (o PUT troca tudo de uma vez). */
+export function updateBody(u: User) {
+  return {
+    fullName: u.fullName,
+    birthDate: u.birthDate,
+    phone: u.phone,
+    course: u.course,
+    period: u.period,
+    shift: u.shift,
+    gender: u.gender,
+    bio: u.bio,
+    trustedContactPhone: u.trustedContactPhone,
+  };
+}
