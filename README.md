@@ -117,7 +117,3 @@ há o botão para recriar a demonstração com horários a partir de agora.
 
 Ficam em `docs/entrega`. A especificação completa das telas e das regras está em `docs/ESPECIFICACAO.md`, e o
 protótipo aprovado das telas em `docs/prototipo`.
-
-## Versão anterior
-
-A primeira versão do projeto, feita em .NET MAUI, está guardada no branch `legado-maui`.
