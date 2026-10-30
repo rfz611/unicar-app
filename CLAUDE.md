@@ -3,7 +3,7 @@
 App de caronas **só para universitários de Curitiba e região**. Também será usado como trabalho de faculdade, por isso o backend é em **C#**. Responda sempre em português.
 
 ## Stack (decidida)
-- **Backend:** C# / ASP.NET Core (net8.0, roda em .NET mais novo), controllers, EF Core + **PostgreSQL** (docker-compose.yml), JWT.
+- **Backend:** C# / ASP.NET Core (net8.0, roda em .NET mais novo), controllers, EF Core + **PostgreSQL** (instalado direto, sem Docker), JWT.
 - **App:** React Native + Expo (ainda não começado). As telas já foram desenhadas e aprovadas num protótipo do Claude Design.
 - **Mapas:** Google — Places API (New) para busca de endereço, Geocoding para o GPS, Routes API para rota/km/tempo. A chave fica **só no servidor** (`appsettings.Local.json`, fora do Git).
 - **Tempo real (próximo):** SignalR para posição do motorista ao vivo, "pedir agora" e chat.
@@ -14,7 +14,6 @@ O backend faz o trabalho pesado (rota, preço, validação, tempo real); o app s
 ## Estado atual
 - Bloco 1 **compilado e testado** (commit "feat: bloco 1 do backend compilado e testado"): login por código no e-mail da faculdade, cadastro (maior de 18, CPF válido e único, celular, curso da lista, período, turno), perfil, busca de endereço/GPS pelo Google, rota e preço.
 - Correções já feitas: desconto da carona marcada antes do mínimo; sem chave do Google, busca e preço respondem 503.
-- O computador foi formatado: o banco do Docker foi apagado (rodar `docker compose up -d` de novo) e `bin/obj` apontam para o caminho antigo (um `dotnet build` resolve).
 - Ainda não existe `appsettings.Local.json` (chave do Google).
 - Banco com **migrations** (`src/UniCar.Api/Data/Migrations`), aplicadas ao subir a API. Nova: `dotnet ef migrations add Nome --project src/UniCar.Api --output-dir Data/Migrations`.
 - Testes de integração (`tests/UniCar.Tests`) sobem a API com um banco PostgreSQL temporário (`ApiFactory`); precisam do PostgreSQL local rodando.
@@ -26,7 +25,7 @@ O backend faz o trabalho pesado (rota, preço, validação, tempo real); o app s
 - Todas as etapas da especificação feitas. Pendências conhecidas: pagamento real (Pix/cartão), envio do link de trajeto ao contato de confiança, push notifications, storage de verdade para fotos.
 - **App mobile** em `mobile/` (Expo SDK 58, TypeScript, Expo Router em `src/app`), seguindo `docs/APP-MOBILE.md` etapa por etapa. Etapas feitas: 1 (tema, Geist, barra de abas animada, cliente da API, modo apresentação com 5 toques no logo) , 2 (entrada: e-mail, código, seu perfil, tudo pronto; `src/session/AuthFlow.tsx`, `ProfileForm.tsx`) e 3 (Caronas em `src/features/rides`: para onde, rota e preços, caronas marcadas, reservar, sugerir horário, Me avise; mapa em `RideMap.tsx` e espaço reservado em `RideMap.web.tsx`). Etapa 4: pedir agora (passageiro em `src/features/trips/PassengerTrip.tsx`, motorista em `DriverMode.tsx` na aba Oferecer, posição simulada sem GPS), tempo real em `src/realtime/RealtimeProvider.tsx` (SignalR com `withCredentials: false`), chat em `src/app/chat/[id].tsx`. Etapa 5: Viagens (`(tabs)/trips.tsx`), Oferecer com escolha "Carona marcada" (`features/rides/OfferForm.tsx`) ou "Dirigir agora", Perfil com foto (`lib/images.ts`, expo-image-picker), telas internas `edit-profile`, `settings`, `verify-email` e `driver` (CNH, foto da CNH e selfie; confere a análise a cada 8 s) com `components/SubScreen.tsx`. Sem chave do Google, a API usa `Places/LocalPlaces.cs` (só Development). Testar com `npx expo start --web` até o Expo Go chegar ao iPhone; mapa vira espaço reservado no navegador. Ver `mobile/README.md`.
 - Node.js LTS instalado via winget (fica em `C:\Program Files\nodejs`).
-- Docker não roda neste PC (WSL2/Plataforma de Máquina Virtual desligada); usando PostgreSQL 16 instalado no Windows.
+- Sem Docker: o `docker-compose.yml` foi apagado; o banco é o PostgreSQL 16 instalado no Windows.
 
 ## O que falta: siga `docs/ESPECIFICACAO.md`
 A especificação lista, tela por tela do protótipo aprovado, cada rota, entidade e regra que falta (caronas marcadas, reservas, viagens, motorista e veículo, pedir agora com SignalR, posição ao vivo, chat, avaliações, foto, preferências). Ela é a fonte da verdade. Se algo nela conflitar com este arquivo, pergunte.

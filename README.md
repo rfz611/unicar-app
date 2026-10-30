@@ -61,9 +61,7 @@ Para preparar um computador do zero, siga o passo a passo em
 
 ### Banco
 
-Com Docker: `docker compose up -d`.
-
-Sem Docker: instale o PostgreSQL, crie o usuário `unicar` com senha `unicar_dev` e permissão `CREATEDB`, e crie o
+Instale o PostgreSQL, crie o usuário `unicar` com senha `unicar_dev` e permissão `CREATEDB`, e crie o
 banco `unicar`. As tabelas são criadas sozinhas quando a API sobe.
 
 ### API
