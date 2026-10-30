@@ -1,150 +1,123 @@
-# UniCar — Backend (C# / ASP.NET Core)
+# UniCar
 
-API do UniCar: caronas entre universitários de Curitiba.
+O UniCar é um app de caronas feito só para universitários de Curitiba e região. Para entrar, a pessoa usa o
+e-mail da faculdade e confirma com um código; assim todo mundo no app é estudante de verdade.
 
-## O que já tem (bloco 1)
+Existem dois jeitos de pegar carona:
 
-| Parte | Rotas |
-|---|---|
-| Login por e-mail da faculdade | `POST /api/auth/request-code`, `POST /api/auth/verify-code` |
-| Cadastro (nome, nascimento, CPF, celular, curso, período, turno) | `POST /api/auth/register` |
-| Perfil | `GET /api/users/me`, `PUT /api/users/me` |
-| Listas | `GET /api/courses`, `GET /api/universities` |
-| Busca de endereço pelo Google (região de Curitiba) | `GET /api/places/autocomplete`, `GET /api/places/{placeId}` |
-| Endereço do GPS | `GET /api/places/reverse?lat=&lng=` |
-| Rota real e preço | `POST /api/quote` |
+- **Pedir agora**: o passageiro diz para onde vai e o app avisa quem está dirigindo naquela direção. O motorista
+  aceita, e o passageiro acompanha o carro chegando no mapa.
+- **Caronas marcadas**: o motorista publica o horário e quantas vagas tem, e quem vai para o mesmo lado reserva.
 
-Regras já aplicadas:
-- Só entra e-mail de faculdade cadastrada (UFPR, PUCPR, UTFPR, Positivo, FAE).
-- Código de 6 dígitos, vale 10 minutos, no máximo 5 tentativas, 1 pedido por minuto e 5 por hora.
-- Maior de 18 anos, CPF com dígitos verificadores válidos, um CPF por conta, celular com DDD, curso só da lista.
-- CPF guardado **criptografado**; a API só devolve mascarado (`***.***.*47-25`).
-- Chave do Google fica só no servidor.
-- Preço: R$ 2 + R$ 0,90/km + R$ 0,12/min, mais 15% do UniCar, mínimo R$ 7. Carona marcada: 10% menos, mínimo R$ 6.
-  Tudo ajustável em `appsettings.json` → `Pricing`.
+Todo mundo começa como passageiro. Para oferecer carona, a pessoa envia a CNH, uma selfie e os dados do carro, e a
+equipe confere antes de liberar. O preço é calculado pela API a partir da rota (km e tempo), e o pagamento (Pix ou
+cartão) é escolhido no fim da corrida. Também dá para conversar pelo chat, compartilhar o trajeto e avaliar a carona.
 
-## Como rodar no Windows
+Trabalho da faculdade, apresentado em outubro de 2026.
 
-Precisa de: **.NET 8 SDK ou mais novo** e **PostgreSQL** (pelo Docker ou instalado).
+## Integrantes
+
+- Kamila Gabriella Brizola
+- Nicollas Teixeira Gomes
+- Raphael Scharf Passos
+- Vinícius Lada
+- Vitória Silva do Vale
+
+## Tecnologias
+
+- **API**: C# com ASP.NET Core 8, Entity Framework Core e PostgreSQL, login com JWT.
+- **Tempo real**: SignalR, usado para a posição do motorista, os pedidos de carona e o chat.
+- **Mapas**: Google Maps (Places, Geocoding e Routes). A chave fica só no servidor.
+- **App**: React Native com Expo e TypeScript, usando o Expo Router.
+- **Testes**: xUnit, com testes de integração que sobem a API com um banco temporário.
+
+## Estrutura
+
+```
+src/UniCar.Api/       API
+  Auth/               login por código no e-mail da faculdade
+  Users/              perfil, foto, preferências, casa
+  Places/             busca de endereço e rotas (Google)
+  Pricing/            cálculo do preço
+  Rides/              caronas marcadas, reservas, viagens, alertas
+  Trips/              pedir agora e corridas
+  Driver/             pedido para virar motorista e painel de análise
+  Chat/, Realtime/    chat e hub do SignalR
+  Data/               banco, migrations e dados de demonstração
+tests/UniCar.Tests/   testes da API
+mobile/               app (Expo)
+  src/app/            telas
+  src/features/       caronas, corrida do passageiro e do motorista
+  src/components/     botões, campos, mapa, barra de abas
+docs/                 especificação, protótipo das telas e documentos da entrega
+```
+
+## Como rodar
+
+Precisa do **.NET 8 SDK** (ou mais novo), do **PostgreSQL** e do **Node.js** (versão LTS).
+
+### Banco
+
+Com Docker: `docker compose up -d`.
+
+Sem Docker: instale o PostgreSQL, crie o usuário `unicar` com senha `unicar_dev` e permissão `CREATEDB`, e crie o
+banco `unicar`. As tabelas são criadas sozinhas quando a API sobe.
+
+### API
 
 ```powershell
-cd C:\Users\<voce>\Dev\UniCar
-
-# 1. Banco (com Docker Desktop aberto)
-docker compose up -d
-
-# 2. Compilar e rodar os testes
 dotnet build
-dotnet test
-
-# 3. Subir a API
 dotnet run --project src\UniCar.Api
 ```
 
-Abra **http://localhost:5080** — cai no Swagger, onde dá para testar cada rota.
-O arquivo `src/UniCar.Api/UniCar.Api.http` tem o passo a passo do login pronto para o VS Code (extensão REST Client) ou Visual Studio.
+A API fica em http://localhost:5080. O arquivo `src/UniCar.Api/UniCar.Api.http` tem exemplos de cada rota.
 
-**Sem Docker?** Instale o PostgreSQL, crie o usuário `unicar` com senha `unicar_dev` (com permissão `CREATEDB`) e o banco `unicar`,
-ou troque a `ConnectionStrings:Default`.
+Sem servidor de e-mail configurado, o código de login não é enviado: ele aparece no terminal da API, numa linha
+`E-MAIL (modo dev)`.
 
-As tabelas são criadas pelas **migrations** quando a API sobe. Para criar uma nova depois de mudar o modelo:
-
-```powershell
-dotnet tool restore
-dotnet ef migrations add NomeDaMudanca --project src\UniCar.Api --output-dir Data/Migrations
-```
-
-Os testes de integração criam um banco temporário `unicar_test_...` no mesmo PostgreSQL e apagam no fim
-(por isso o `CREATEDB`). Outro servidor: variável `UNICAR_TEST_PG`.
-
-### Demonstração (apresentação)
-
-Em Development (`Demo:Enabled = true` em `appsettings.Development.json`) a API cria, na primeira vez que sobe,
-universitários e caronas de exemplo. Todas as contas terminam em `.demo@...`:
-
-| Conta | Papel |
-|---|---|
-| `ana.demo@ufpr.br` | Passageira: casa no Água Verde, reserva amanhã 7h30 com o Bruno, 2 viagens no histórico, alerta "Me avise" |
-| `bruno.demo@ufpr.br` | Motorista (Onix prata): Batel → Politécnico hoje em ~2h e amanhã 7h30 |
-| `carla.demo@pucpr.edu.br` | Motorista (HB20 branco): Água Verde → PUCPR amanhã 7h45, com sugestão de +10 min do Felipe |
-| `diego.demo@utfpr.edu.br` | Motorista (Gol preto): carona lotada para a UTFPR |
-| `eduarda.demo@up.edu.br` | Pedido de motorista **em análise** |
-| `felipe.demo@utfpr.edu.br`, `gabriela.demo@up.edu.br` | Passageiros |
-| `admin.demo@ufpr.br` | Admin: aprova ou recusa motoristas |
-
-- **Antes de apresentar**, recrie com horários a partir de agora: `POST /api/dev/demo/reset`.
-- **Entrar sem código**: `POST /api/dev/login` com `{ "email": "ana.demo@ufpr.br" }` (só aceita contas `.demo@`).
-- Fora de Development, ou com `Demo:Enabled = false`, as rotas `/api/dev` respondem 404 e nada é criado.
-- Os preços das caronas de exemplo usam a rota estimada (sem chamar o Google), então funcionam sem chave.
-
-### Tempo real (SignalR)
-
-Hub em `/hubs/trips`, autenticado com o token de acesso (`?access_token=` ou header). No app (Expo):
-
-```js
-import * as signalR from "@microsoft/signalr";
-const hub = new signalR.HubConnectionBuilder()
-  .withUrl(`${API}/hubs/trips`, { accessTokenFactory: () => token })
-  .withAutomaticReconnect()
-  .build();
-hub.on("TripUpdated", trip => ...);          // aceito, chegou, em viagem, chegada
-hub.on("DriverLocation", p => ...);          // { tripId, latitude, longitude, at }
-hub.on("MessageReceived", m => ...);         // chat
-await hub.start();
-await hub.invoke("UpdateLocation", tripId, lat, lng); // motorista, a cada ~3 s
-```
-
-Eventos: `RideRequested`, `RideRequestClosed`, `TripUpdated`, `DriverLocation`, `MessageReceived`, `Typing`,
-`RideUpdated`, `TimeSuggested`, `RouteAlertMatched`. Métodos: `UpdateLocation`, `UpdateDriverPosition`, `SendMessage`, `Typing`.
-
-**Sem chave do Google em Development**, preço e rota usam estimativa (`estimated: true` nas respostas) para a
-demonstração funcionar. Em produção (`GoogleMaps:EstimateWhenNotConfigured` desligado) continua 503.
-
-### Fotos
-
-- **Perfil**: `POST /api/users/me/photo` → JPEG 512×512 (corte no centro, sem metadados/GPS), servido em `/uploads/avatars/...`.
-  Em desenvolvimento fica em `src/UniCar.Api/wwwroot/uploads` (fora do Git). Em produção, trocar `PublicStorage` por um storage.
-- **Documentos do motorista** (CNH, selfie) ficam em `App_Data/private`, nunca em `/uploads`: só o admin vê, pela API.
-
-### O código de verificação em desenvolvimento
-
-Sem SMTP configurado, a API **não envia e-mail**: o código aparece no terminal onde a API está rodando,
-numa linha `E-MAIL (modo dev) para ...`. Para enviar de verdade, preencha a seção `Smtp`
-com um provedor (Resend, Brevo, SendGrid, Amazon SES).
-
-### Chave do Google Maps
-
-1. Crie um projeto em https://console.cloud.google.com e ative o faturamento (há cota grátis mensal).
-2. Ative **Places API (New)**, **Routes API** e **Geocoding API**.
-3. Crie uma chave em *APIs e serviços → Credenciais* e restrinja a essas três APIs.
-4. Crie `src/UniCar.Api/appsettings.Local.json` (fica fora do Git):
+Sem chave do Google, a API funciona em modo de desenvolvimento com uma lista de lugares de Curitiba e rotas
+estimadas. Para usar o Google de verdade, crie `src/UniCar.Api/appsettings.Local.json` (esse arquivo não vai para o
+Git):
 
 ```json
 { "GoogleMaps": { "ApiKey": "SUA_CHAVE" } }
 ```
 
-## Segredos
+### Testes
 
-`appsettings.Development.json` tem chaves **só para desenvolvimento**. Em produção, defina
-`Jwt__SigningKey` e `Security__HashPepper` como variáveis de ambiente com valores longos e aleatórios.
-A pasta `keys/` guarda a chave que criptografa os CPFs: não apague e não suba para o Git.
-
-## Estrutura
-
-```
-src/UniCar.Api
-  Auth/      login por e-mail, código, tokens
-  Users/     perfil e validações de cadastro
-  Places/    Google Places, Geocoding e Routes
-  Pricing/   cálculo do preço
-  Domain/    entidades (User, University, Campus, SavedPlace, EmailVerificationCode)
-  Data/      banco (EF Core + PostgreSQL) e faculdades iniciais
-  Common/    CPF, celular, criptografia, cursos
-tests/UniCar.Tests   testes de preço e validações
+```powershell
+dotnet test
 ```
 
-## Próximos blocos
+Os testes criam um banco `unicar_test_...` no PostgreSQL local e apagam no fim. Para usar outro servidor, defina a
+variável `UNICAR_TEST_PG`.
 
-2. Caronas: oferecer, buscar, reservar, cancelar; casa e faculdade salvas.
-3. Tempo real com SignalR: pedir agora, motorista a caminho, posição ao vivo, chat.
-4. Motorista: CNH validada, fotos, análise manual; avaliações; pagamento (Pix/cartão).
+### App
+
+```powershell
+cd mobile
+npm install
+npx expo start --web
+```
+
+Abre em http://localhost:8081. No navegador o mapa aparece como um espaço reservado. Para abrir no celular, use
+`npx expo start --tunnel` e o Expo Go. Nesse caso, a API também precisa estar acessível pela internet (por exemplo,
+com ngrok) e o endereço vai em `EXPO_PUBLIC_API_URL`, num arquivo `mobile/.env.local`.
+
+### Demonstração
+
+Com a API em Development, o banco já vem com contas de exemplo, todas terminadas em `.demo@`: a Ana é passageira,
+o Bruno e a Carla são motoristas, a Eduarda está com o cadastro de motorista em análise e `admin.demo@ufpr.br`
+aprova motoristas.
+
+Na tela de boas-vindas do app, toque 5 vezes no logo para escolher uma conta e entrar sem código. No mesmo lugar
+há o botão para recriar a demonstração com horários a partir de agora.
+
+## Documentos da entrega
+
+Ficam em `docs/entrega`. A especificação completa das telas e das regras está em `docs/ESPECIFICACAO.md`, e o
+protótipo aprovado das telas em `docs/prototipo`.
+
+## Versão anterior
+
+A primeira versão do projeto, feita em .NET MAUI, está guardada no branch `legado-maui`.
