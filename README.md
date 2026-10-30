@@ -56,6 +56,9 @@ docs/                 especificação, protótipo das telas e documentos da entr
 
 Precisa do **.NET 8 SDK** (ou mais novo), do **PostgreSQL** e do **Node.js** (versão LTS).
 
+Para preparar um computador do zero, siga o passo a passo em
+[docs/COMO-RODAR-NO-NOTEBOOK.md](docs/COMO-RODAR-NO-NOTEBOOK.md).
+
 ### Banco
 
 Com Docker: `docker compose up -d`.
