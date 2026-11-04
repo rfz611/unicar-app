@@ -44,7 +44,9 @@ src/UniCar.Api/       API
   Driver/             pedido para virar motorista e painel de análise
   Chat/, Realtime/    chat e hub do SignalR
   Data/               banco, migrations e dados de demonstração
+src/UniCar.Persistencia/   entrega de persistência: console com EF Core e SQLite (ver o README dele)
 tests/UniCar.Tests/   testes da API
+tests/UniCar.Persistencia.Tests/   testes da persistência (SQLite em memória)
 mobile/               app (Expo)
   src/app/            telas
   src/features/       caronas, corrida do passageiro e do motorista

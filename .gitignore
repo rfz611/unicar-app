@@ -7,3 +7,8 @@ keys/
 appsettings.Local.json
 App_Data/
 **/wwwroot/uploads/
+
+# banco SQLite local do projeto de persistência
+*.db
+*.db-shm
+*.db-wal
